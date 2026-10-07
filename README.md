@@ -19,6 +19,13 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
 - [Chapter 01: JavaScript Basics](#chapter-01-javascript-basics)
   - [01: Hello World](#01-hello-world)
   - [02: Math with Numbers](#02-math-with-numbers)
+- [Chapter 02: Keywords and Identifiers](#chapter-02-keywords-and-identifiers)
+  - [03: The JavaScript Engine](#03-the-javascript-engine)
+  - [05: Keywords vs Identifiers: var, let, const](#05-keywords-vs-identifiers-var-let-const)
+  - [06: Identifier Rules](#06-identifier-rules)
+  - [07: Naming Conventions](#07-naming-conventions)
+  - [08: Comments](#08-comments)
+  - [09: Interview Questions on Identifiers](#09-interview-questions-on-identifiers)
 - [Coming Up](#coming-up)
 
 ---
@@ -27,8 +34,8 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
 
 ```mermaid
 flowchart LR
-    C0["00 Prompt Engineering<br/>RICE-POT"]:::done --> C1["01 JS Basics<br/>Hello World, Math"]:::progress
-    C1 --> C2["02 Keywords and Literals"]:::planned
+    C0["00 Prompt Engineering<br/>RICE-POT"]:::done --> C1["01 JS Basics<br/>Hello World, Math"]:::done
+    C1 --> C2["02 Keywords and Identifiers<br/>var/let/const, naming, comments"]:::progress
     C2 --> C3["03 Literals"]:::planned
     C3 --> TS["TypeScript"]:::planned
     TS --> PW["Playwright"]:::planned
@@ -45,8 +52,8 @@ flowchart LR
 | # | Chapter | Folder | Status | What you learn |
 |:--|:--------|:-------|:------:|:---------------|
 | 00 | Prompt Engineering | [00_chapter_Prompt_Eng](00_chapter_Prompt_Eng/) | ✅ Done | RICE-POT prompts, anti-hallucination rules, the Selenium framework a prompt generated |
-| 01 | JavaScript Basics | [01_chapter_JS_Basics](01_chapter_JS_Basics/) | 🟡 In progress | Running a file with Node, `console.log`, arithmetic expressions |
-| 02 | Keywords and Literals | [02_chapter_JS_Keywrods_Literals](02_chapter_JS_Keywrods_Literals/) | ⏳ Planned | Reserved words, literal values |
+| 01 | JavaScript Basics | [01_chapter_JS_Basics](01_chapter_JS_Basics/) | ✅ Done | Running a file with Node, `console.log`, arithmetic expressions |
+| 02 | Keywords and Identifiers | [02_chapter_JS_Keywrods_Identifiers](02_chapter_JS_Keywrods_Identifiers/) | 🟡 In progress | How V8 runs code, `var`/`let`/`const`, identifier rules, naming conventions, comments |
 | 03 | Literals | `03_chapter_JS_Literals` | ⏳ Planned | Number, string, boolean, array and object literals |
 
 ---
@@ -67,7 +74,14 @@ LearnJSTSPlaywright4x/
 ├── 01_chapter_JS_Basics/
 │   ├── 01_HelloWorld.js                    # First program: console.log
 │   └── 02_Math.js                          # Arithmetic expressions
-├── 02_chapter_JS_Keywrods_Literals/        # (planned)
+├── 02_chapter_JS_Keywrods_Identifiers/
+│   ├── 03_js_engine.js                     # How V8 runs a file, hot code and JIT
+│   ├── 04_letengine.js                     # Smallest program: one let declaration
+│   ├── 05_KW_IND.js                        # Keyword vs identifier: var, let, const
+│   ├── 06_KW_IND_Rules.js                  # Identifier rules: what a name may contain
+│   ├── 07_IND_Rules2.js                    # Naming conventions: camelCase, PascalCase, ...
+│   ├── 08_Comments.js                      # Single-line, multi-line and JSDoc comments
+│   └── 09_IQ.js                            # Interview drill: valid vs invalid identifiers
 └── 03_chapter_JS_Literals/                 # (planned)
 ```
 
@@ -83,6 +97,8 @@ cd LearnJSTSPlaywright4x
 node --version                              # v18+ (tested on v22)
 node 01_chapter_JS_Basics/01_HelloWorld.js  # Hello World!
 ```
+
+Every lesson file runs the same way: `node <chapter folder>/<file>.js`.
 
 ---
 
@@ -207,8 +223,265 @@ $ node 01_chapter_JS_Basics/02_Math.js
 
 ---
 
+## Chapter 02: Keywords and Identifiers
+
+### 03: The JavaScript Engine
+
+**Concept:** `node` hands your file to V8, Google's JavaScript engine. V8 parses the whole file, turns it into bytecode, runs that in an interpreter (Ignition), and recompiles "hot" code, code that runs many times like a loop body, into fast machine code (TurboFan). This is Just-In-Time (JIT) compilation.
+
+**Why:** Knowing that JavaScript is compiled just in time, not read line by line, explains why a single syntax error stops the whole file and why loops get faster the longer they run.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When a file fails with `SyntaxError` and nothing prints, not even the `console.log` on line 1. V8 parses the entire file before it runs any of it.
+- **Q: What does it replace?** A: The idea that JavaScript is "just interpreted". V8 interprets first, then optimises the hot paths, and drops back to the interpreter (deoptimises) if its assumptions about your values break.
+- **Q: What's the gotcha?** A: The hot-code loop in `03_js_engine.js` is commented out for a reason: 100,000 iterations, each calling `console.log` twice, floods the terminal. It also calls `badCodeFn()` before the function is written, which works because function declarations are hoisted.
+
+```mermaid
+flowchart LR
+    SRC["03_js_engine.js"] --> P[Parser]
+    P --> AST[AST]
+    AST --> IG["Ignition<br/>interpreter + bytecode"]
+    IG --> RUN((Runs))
+    IG -->|"code is hot<br/>(runs many times)"| TF["TurboFan<br/>optimised machine code"]
+    TF --> RUN
+    TF -.->|"assumption broken<br/>(deoptimise)"| IG
+```
+
+```js
+// 02_chapter_JS_Keywrods_Identifiers/03_js_engine.js
+let a = 10;
+console.log(a);
+
+// Hot Code
+//  for (let a = 0; a < 100000; a++) {
+//     console.log(a);
+//     badCodeFn();
+// }
+
+// function badCodeFn() {
+//     console.log("Hello");
+// }
+```
+
+```bash
+$ node 02_chapter_JS_Keywrods_Identifiers/03_js_engine.js
+10
+```
+
+`04_letengine.js` is the smallest program you can feed the engine: a single `let x = 10;`. It prints nothing, but V8 still parses, compiles and runs it.
+
+### 05: Keywords vs Identifiers: var, let, const
+
+**Concept:** A keyword is a word the language owns (`var`, `let`, `const`, `if`, `class`, `return`). An identifier is the name you choose. In `let l = 10;`, `let` is the keyword, `l` is the identifier and `10` is the literal value.
+
+**Why:** Every variable in a test (a URL, a timeout, an expected value) starts with one of these three keywords, so choosing between them is the first decision you make on every line.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: `let` for values that change, `const` for values that are never reassigned (URLs, timeouts, config), `var` only when reading older code. The lesson's rule of thumb for QA scripts: `let` about 96%, `const` about 3%, `var` about 1%.
+- **Q: What does it replace?** A: `var` was the only option before ES6 (2015). `var` is function-scoped and can be declared twice; `let` and `const` are block-scoped and a second declaration in the same scope is a `SyntaxError`.
+- **Q: What's the gotcha?** A: `const` blocks reassignment, not change: `const arr = []; arr.push(1)` is fine. Reassigning a `const` throws `TypeError: Assignment to constant variable.`
+
+```mermaid
+flowchart TD
+    Q{"Will this variable be<br/>reassigned later?"} -->|Yes| L["let"]
+    Q -->|No| C["const"]
+    Q -->|"Reading pre-2015 code"| V["var (legacy)"]
+    L --> B["Block scoped"]
+    C --> B
+    V --> F["Function scoped, hoisted as undefined"]
+```
+
+| | `var` | `let` | `const` |
+|:--|:--:|:--:|:--:|
+| Scope | Function | Block | Block |
+| Declare twice in the same scope | ✅ Allowed | ❌ `SyntaxError` | ❌ `SyntaxError` |
+| Reassign | ✅ | ✅ | ❌ `TypeError` |
+| Use before the declaration line | `undefined` | ❌ `ReferenceError` | ❌ `ReferenceError` |
+
+```js
+// 02_chapter_JS_Keywrods_Identifiers/05_KW_IND.js
+var v = 10;   // keyword: var,   identifier: v
+let l = 10;   // keyword: let,   identifier: l
+const c = 10; // keyword: const, identifier: c
+
+// What happens when you break the rules:
+// let l = 20;      SyntaxError: Identifier 'l' has already been declared
+// c = 20;          TypeError: Assignment to constant variable.
+```
+
+### 06: Identifier Rules
+
+**Concept:** An identifier must start with a letter, `_` or `$`. After the first character it may also contain digits. No spaces, no hyphens, no reserved words, and names are case sensitive.
+
+**Why:** Breaking a rule is a `SyntaxError`, and because V8 parses the whole file first, one bad name stops the entire file from running.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Every time you name something. Check three things: the first character is a letter, `_` or `$`; the rest are letters, digits, `_` or `$`; the name is not a reserved word.
+- **Q: What does it replace?** A: Nothing new if you know Java: the rules are nearly identical. Even `$` and `_` on their own are legal names (`var $ = 10; var _ = 10;`).
+- **Q: What's the gotcha?** A: Names are case sensitive, so `Name` and `name` are two different variables. And the error rarely says "bad name": `var 45 = 34` throws `SyntaxError: Unexpected number`.
+
+```mermaid
+flowchart TD
+    S["Candidate name"] --> A{"First character is<br/>a letter, _ or $?"}
+    A -->|No| E["SyntaxError"]
+    A -->|Yes| B{"Rest is only letters,<br/>digits, _ or $?"}
+    B -->|No| E
+    B -->|Yes| C{"Is it a reserved word?<br/>(class, let, if, return ...)"}
+    C -->|Yes| E
+    C -->|No| OK["Valid identifier"]
+```
+
+```js
+// 02_chapter_JS_Keywrods_Identifiers/06_KW_IND_Rules.js (excerpt)
+var a = 10;
+var $ = 10;               // $ alone is a valid name
+var _a = 23;
+var _ = 10;               // _ alone is a valid name
+var ab123 = 23;           // digits are fine after the first character
+
+var Name = "pramod";      // Name and name are two
+var name = "Amit";        // different variables
+
+var pramod_dutta = "hello";
+var pramod$dutta = "hello";
+
+// var 45 = 34;              SyntaxError: Unexpected number
+// var pramod dutta = "x";   SyntaxError: Unexpected identifier 'dutta'
+```
+
+### 07: Naming Conventions
+
+**Concept:** Conventions are team agreements on how to write a name: camelCase for variables and functions, PascalCase for classes and constructors, SCREAMING_SNAKE_CASE for constants, snake_case mostly outside JavaScript.
+
+**Why:** The engine accepts all of them; people reading your test need the casing to tell a class from a variable from a fixed config value at a glance.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: camelCase for almost everything (`userName`, `isLoggedIn`), PascalCase for Page Object classes (`LoginPage`), SCREAMING_SNAKE_CASE for values that never change (`BASE_URL`, `MAX_RETRIES`).
+- **Q: What does it replace?** A: Hungarian notation (`strName`, `bActive`, `nCount`), an older style that put the type in the name. TypeScript types do that job now, so modern style guides avoid it.
+- **Q: What's the gotcha?** A: Conventions are not enforced. `This_is_a_very_long_name_variable` runs fine; only a linter (ESLint's `camelcase` rule) or a code review will catch it.
+
+```mermaid
+flowchart LR
+    Q{"What are you naming?"} -->|"Variable or function"| CC["camelCase<br/>userName"]
+    Q -->|"Class or constructor"| PC["PascalCase<br/>UserProfile"]
+    Q -->|"Fixed constant"| SS["SCREAMING_SNAKE_CASE<br/>MAX_SIZE"]
+    Q -->|"DB columns, Python, env files"| SN["snake_case<br/>user_name"]
+```
+
+| Convention | Example | Used for in JS |
+|:-----------|:--------|:---------------|
+| camelCase | `totalPrice` | Variables, functions (the default) |
+| PascalCase | `ShoppingCart` | Classes, constructors, Page Objects |
+| SCREAMING_SNAKE_CASE | `API_KEY` | Constants and config |
+| snake_case | `total_price` | Rare in JS; common in Python and SQL |
+| Hungarian | `bActive` | Legacy code only |
+
+```js
+// 02_chapter_JS_Keywrods_Identifiers/07_IND_Rules2.js (excerpt)
+let userName = "camelCase";          // 1. camelCase
+let isLoggedIn = true;
+
+let UserProfile = "PascalCase";      // 2. PascalCase
+
+let user_name = "snake_case";        // 3. snake_case
+
+const MAX_SIZE = 100;                // 4. SCREAMING_SNAKE_CASE
+const API_KEY = "abc123";
+// MAX_SIZE = 90;                    TypeError: Assignment to constant variable.
+
+let strName = "string prefix";       // 5. Hungarian notation (older style)
+let bActive = true;
+```
+
+### 08: Comments
+
+**Concept:** Comments are text the engine skips. `//` comments out the rest of the line, `/* ... */` spans multiple lines, and `/** ... */` is a JSDoc block that editors like VS Code show as hover documentation.
+
+**Why:** Comments explain why code exists, and commenting out a line is the fastest way to switch it off while debugging a test.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: To explain intent, to switch a line off temporarily (`Cmd + /` on Mac, `Ctrl + /` on Windows and Linux in VS Code), and to add JSDoc to functions other people will call.
+- **Q: What does it replace?** A: Nothing new if you know Java: the same `//`, `/* */` and `/** */` syntax. Javadoc becomes JSDoc.
+- **Q: What's the gotcha?** A: Block comments do not nest. In `/* outer /* inner */ still code */` the comment ends at the first `*/`, so `still code */` is parsed as code and throws a `SyntaxError`.
+
+```mermaid
+flowchart LR
+    F["08_Comments.js"] --> T{"Tokenizer"}
+    T -->|"// ... (to end of line)"| X["Skipped"]
+    T -->|"/* ... */ and /** ... */"| X
+    T -->|"var g = 10;"| R["Parsed and run"]
+```
+
+```js
+// 02_chapter_JS_Keywrods_Identifiers/08_Comments.js
+// This is a single-line comment, it will be ignored
+// this line will not be executed
+
+/*
+ *  This is a multi-line comment
+ *  Author : Pramod Dutta
+ *  Date : 11-Jul-2026
+ */
+
+/**
+ *  This is a JSDoc comment
+ *  Author : Pramod Dutta
+ *  Date : 14-Feb-2026
+ **/
+
+var g = 10; // cmd + /, ctrl + /
+```
+
+### 09: Interview Questions on Identifiers
+
+**Concept:** A drill file of the identifier cases interviewers like to ask about: legal first characters, digits, Unicode names, escape sequences, case sensitivity, and the characters that break a name.
+
+**Why:** These questions check whether you know the actual rule or only the everyday cases, and the edge cases (Unicode, escapes) are where people get caught.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Before an interview, or when a reviewer asks "is that even legal?". Run `node 02_chapter_JS_Keywrods_Identifiers/09_IQ.js`: it exits silently, which proves every uncommented line is valid.
+- **Q: What does it replace?** A: Memorising a list. It is the same rule as lesson 06, applied to Unicode: `café` and `变量` are valid because `é` and `变` count as letters.
+- **Q: What's the gotcha?** A: `let A = ...` declares a variable named `A`, because the escape is decoded before the name is checked. And `Function` is a built-in, not a reserved word: `let Function = "x"` runs and shadows the global. Reserved words such as `class` or `let` are the ones that fail.
+
+```mermaid
+flowchart LR
+    Q{"Valid identifier?"} -->|Yes| V["Valid"]
+    Q -->|No| I["SyntaxError"]
+    V --> V1["validName, _private, $jquery"]
+    V --> V2["item1, $var123, a1_b2"]
+    V --> V3["café, 变量 (Unicode letters)"]
+    V --> V4["A decodes to A"]
+    V --> V5["MyVar and myvar: two variables"]
+    I --> I1["1stPlace: starts with a digit"]
+    I --> I2["my-name, my name: hyphen, space"]
+    I --> I3["my@name, my!name: symbols"]
+    I --> I4["class, let: reserved words"]
+```
+
+```js
+// 02_chapter_JS_Keywrods_Identifiers/09_IQ.js (excerpt)
+let validName = "starts with letter";
+let _private = "starts with underscore";
+let $jquery = "starts with dollar sign";
+let a1_b2 = "mixed letters digits underscore";
+
+// let 1stPlace = "invalid";     SyntaxError: Invalid or unexpected token
+
+let MyVar = "uppercase M";       // case sensitive:
+let myvar = "lowercase v";       // two separate variables
+
+let café = "Unicode letter é";
+let 变量 = "Chinese characters";
+let A = "Unicode escape for A";  // this variable is named A
+
+// let my-name = "invalid";      SyntaxError: Unexpected token '-'
+// let my name = "invalid";      SyntaxError: Unexpected identifier
+// let my@name = "invalid";      SyntaxError: Unexpected token '@'
+```
+
+---
+
 ## Coming Up
 
-- **Chapter 02: Keywords and Literals**: reserved words (`let`, `const`, `if`, `return`, ...) and how literal values are written.
 - **Chapter 03: Literals**: number, string, boolean, array, and object literals in depth.
 - Then TypeScript, then Playwright.
