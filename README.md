@@ -467,6 +467,8 @@ let a1_b2 = "mixed letters digits underscore";
 
 // let 1stPlace = "invalid";     SyntaxError: Invalid or unexpected token
 
+// let Function = "invalid";     but it actually works: Function is a
+//                               built-in name, not a reserved word
 let MyVar = "uppercase M";       // case sensitive:
 let myvar = "lowercase v";       // two separate variables
 

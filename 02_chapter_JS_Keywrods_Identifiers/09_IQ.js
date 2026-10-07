@@ -15,7 +15,8 @@ let a1_b2 = "mixed letters digits underscore";
 // let 1stPlace = "invalid";
 // let 2ndItem = "invalid";
 
-// let Function = "invalid";
+// let Function = "invalid"; 
+// let Function = "invalid"; but it actually works. Function is a built-in name, not a reserved word
 let MyVar = "uppercase M";
 let myvar = "lowercase v";
 
