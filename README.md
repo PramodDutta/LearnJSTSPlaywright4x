@@ -26,6 +26,19 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [07: Naming Conventions](#07-naming-conventions)
   - [08: Comments](#08-comments)
   - [09: Interview Questions on Identifiers](#09-interview-questions-on-identifiers)
+- [Chapter 03: Literals](#chapter-03-literals)
+  - [10: Literals and typeof](#10-literals-and-typeof)
+  - [12: null vs undefined](#12-null-vs-undefined)
+  - [14: Number Literals: Bases and Exponents](#14-number-literals-bases-and-exponents)
+  - [16: Numeric Separators and BigInt](#16-numeric-separators-and-bigint)
+  - [17: Special Numbers: Infinity and NaN](#17-special-numbers-infinity-and-nan)
+- [Chapter 04: Operators](#chapter-04-operators)
+  - [19: Expressions and Data Types](#19-expressions-and-data-types)
+  - [20: Assignment Operators](#20-assignment-operators)
+  - [21: Arithmetic Operators](#21-arithmetic-operators)
+  - [22: Comparison Operators (Loose vs Strict)](#22-comparison-operators-loose-vs-strict)
+  - [23: Logical Operators](#23-logical-operators)
+  - [24: Confusing Comparisons](#24-confusing-comparisons)
 - [Coming Up](#coming-up)
 
 ---
@@ -35,9 +48,10 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
 ```mermaid
 flowchart LR
     C0["00 Prompt Engineering<br/>RICE-POT"]:::done --> C1["01 JS Basics<br/>Hello World, Math"]:::done
-    C1 --> C2["02 Keywords and Identifiers<br/>var/let/const, naming, comments"]:::progress
-    C2 --> C3["03 Literals"]:::planned
-    C3 --> TS["TypeScript"]:::planned
+    C1 --> C2["02 Keywords and Identifiers<br/>var/let/const, naming, comments"]:::done
+    C2 --> C3["03 Literals<br/>null, undefined, numbers, BigInt"]:::done
+    C3 --> C4["04 Operators<br/>arithmetic, comparison, logical"]:::progress
+    C4 --> TS["TypeScript"]:::planned
     TS --> PW["Playwright"]:::planned
 
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
@@ -53,8 +67,9 @@ flowchart LR
 |:--|:--------|:-------|:------:|:---------------|
 | 00 | Prompt Engineering | [00_chapter_Prompt_Eng](00_chapter_Prompt_Eng/) | ✅ Done | RICE-POT prompts, anti-hallucination rules, the Selenium framework a prompt generated |
 | 01 | JavaScript Basics | [01_chapter_JS_Basics](01_chapter_JS_Basics/) | ✅ Done | Running a file with Node, `console.log`, arithmetic expressions |
-| 02 | Keywords and Identifiers | [02_chapter_JS_Keywrods_Identifiers](02_chapter_JS_Keywrods_Identifiers/) | 🟡 In progress | How V8 runs code, `var`/`let`/`const`, identifier rules, naming conventions, comments |
-| 03 | Literals | `03_chapter_JS_Literals` | ⏳ Planned | Number, string, boolean, array and object literals |
+| 02 | Keywords and Identifiers | [02_chapter_JS_Keywrods_Identifiers](02_chapter_JS_Keywrods_Identifiers/) | ✅ Done | How V8 runs code, `var`/`let`/`const`, identifier rules, naming conventions, comments |
+| 03 | Literals | [03_chapter_JS_Literals](03_chapter_JS_Literals/) | ✅ Done | `typeof`, `null` vs `undefined`, number bases, exponents, numeric separators, BigInt, `Infinity`, `NaN` |
+| 04 | Operators | [04_chapter_JS_Operators](04_chapter_JS_Operators/) | 🟡 In progress | Data types, assignment, arithmetic, `==` vs `===`, `&&` `\|\|` `!`, coercion traps |
 
 ---
 
@@ -82,7 +97,24 @@ LearnJSTSPlaywright4x/
 │   ├── 07_IND_Rules2.js                    # Naming conventions: camelCase, PascalCase, ...
 │   ├── 08_Comments.js                      # Single-line, multi-line and JSDoc comments
 │   └── 09_IQ.js                            # Interview drill: valid vs invalid identifiers
-└── 03_chapter_JS_Literals/                 # (planned)
+├── 03_chapter_JS_Literals/
+│   ├── 10_Literal.js                       # A literal is the value you write: let a = 10
+│   ├── 11_Numberal.js                      # String, number, boolean, null literals + typeof
+│   ├── 12_Null_Undefined.js                # null vs undefined, typeof null is "object"
+│   ├── 13_Null.js                          # Practice: a null and an undefined variable
+│   ├── 14_Literals.js                      # Integers, hex, octal, exponent literals
+│   ├── 15_Number.js                        # Binary, octal, hex, floats, exponential notation
+│   ├── 16_Numbers_PART2.js                 # Numeric separators (1_000_000) and BigInt
+│   ├── 17_Special.js                       # Infinity, -Infinity, NaN
+│   └── 18_undefined.js                     # Practice: undefined vs null
+└── 04_chapter_JS_Operators/
+    ├── 19_Arch.js                          # Anatomy of an expression, JS data types
+    ├── 20_Assigment_Op.js                  # = and reassigning a variable
+    ├── 21_Arithematic_Op.js                # + - * / % ** and the odd/even check
+    ├── 22_Comparsion_Op.js                 # == vs ===, != vs !==
+    ├── 23_Logical_Op.js                    # && || !
+    ├── 24_Confusing_Comparsion.js          # "" == 0, "0" == 0, "" == "0"
+    └── 25_CC.js                            # (empty, work in progress)
 ```
 
 ---
@@ -483,7 +515,462 @@ let A = "Unicode escape for A";  // this variable is named A
 
 ---
 
+## Chapter 03: Literals
+
+### 10: Literals and typeof
+
+**Concept:** A literal is a fixed value typed straight into your code: `10`, `"pramod"`, `3.14`, `true`, `null`. `typeof` is an operator that tells you, as a string, which type a value has.
+
+**Why:** Test data is full of literals (usernames, expected counts, flags), and `typeof` is the quickest way to check that a value read from a page or an API is the type you think it is.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When an assertion fails and you suspect a type mismatch, for example a count read from the page is `"5"` (string), not `5` (number). `console.log(typeof value)` settles it in one line.
+- **Q: What does it replace?** A: Java's typed declarations (`String name = "pramod";`). In JavaScript the variable has no type, the value does, and `typeof` reads it at runtime.
+- **Q: What's the gotcha?** A: `typeof null` is `"object"`, a bug from the first version of JavaScript that can never be fixed without breaking old websites. Also, `'single'` and `"double"` quotes make exactly the same string.
+
+```mermaid
+flowchart LR
+    A["'pramod'"] -->|typeof| T1["string"]
+    B["3.14"] -->|typeof| T2["number"]
+    C["true"] -->|typeof| T3["boolean"]
+    D["let undefinedValue;"] -->|typeof| T4["undefined"]
+    E["null"] -->|typeof| T5["object (historical bug)"]:::warn
+
+    classDef warn fill:#fef3c7,stroke:#d97706,color:#78350f
+```
+
+```js
+// 03_chapter_JS_Literals/11_Numberal.js
+let age = "pramod";     // string literal
+let age2 = 'pramod';    // same string, single quotes
+let isStudent = true;   // boolean literal
+let pi = 3.14;          // numeric literal
+let nullValue = null;   // null literal
+let undefinedValue;     // no literal: JavaScript fills in undefined
+
+console.log(typeof age);            // string
+console.log(typeof age2);           // string
+console.log(typeof pi);             // number
+console.log(typeof isStudent);      // boolean
+console.log(typeof nullValue);      // object
+console.log(typeof undefinedValue); // undefined
+```
+
+`10_Literal.js` is the one-line version: in `let a = 10;` the literal is `10`.
+
+### 12: null vs undefined
+
+**Concept:** `undefined` means a variable exists but nothing has been assigned to it yet, and JavaScript sets it for you. `null` means "intentionally empty", and only you (or an API) set it.
+
+**Why:** Both show up whenever a value might be missing (an optional field in an API response, an attribute that is not on the element), and they behave differently in comparisons.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Assign `null` when you mean "no value, on purpose" (`let profilePicture = null`). Leave `undefined` to JavaScript. In Playwright, `locator.getAttribute('href')` resolves to `null` when the attribute is missing.
+- **Q: What does it replace?** A: Java has only `null`. JavaScript splits "not set yet" (`undefined`) from "deliberately empty" (`null`).
+- **Q: What's the gotcha?** A: `null == undefined` is `true` but `null === undefined` is `false`, and `typeof null` is `"object"`. To test for null, write `value === null`; `typeof` cannot tell you.
+
+```mermaid
+flowchart TD
+    D["let userName;"] --> U["undefined<br/>set by JavaScript"]
+    N["let profilePicture = null;"] --> NU["null<br/>set by you"]
+    U --> L{"null == undefined"}
+    NU --> L
+    L --> LT["true (loose)"]
+    U --> S{"null === undefined"}
+    NU --> S
+    S --> SF["false (strict)"]
+```
+
+| Feature | `undefined` | `null` |
+|:--------|:------------|:-------|
+| Meaning | Not assigned yet | Intentionally empty |
+| Who sets it? | JavaScript, automatically | The developer, manually |
+| `typeof` | `"undefined"` | `"object"` (historical bug) |
+| `null == undefined` | `true` | `true` |
+| `null === undefined` | `false` | `false` |
+
+```js
+// 03_chapter_JS_Literals/12_Null_Undefined.js (excerpt)
+let userName;                       // declared but not assigned
+console.log(userName);              // undefined
+console.log(typeof userName);       // undefined
+
+let x;
+x = 10;
+console.log(x);                     // 10
+
+let profilePicture = null;          // intentionally empty
+console.log(profilePicture);        // null
+console.log(typeof profilePicture); // object   <-- known JS quirk!
+```
+
+`13_Null.js` and `18_undefined.js` are two-line practice files: one variable left `undefined`, one set to `null`.
+
+### 14: Number Literals: Bases and Exponents
+
+**Concept:** JavaScript has one `number` type for whole numbers and decimals alike. You can write the same number in decimal (`42`), binary (`0b101010`), octal (`0o52`) or hex (`0x2A`), and very large or very small numbers in exponent form (`1.5e3`, `1.5e-4`).
+
+**Why:** Hex shows up in colour codes (`0xFF0000`), exponent form keeps big values readable (`1e6`), and all of them are plain `number` underneath, so they mix freely.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Hex for colours and byte values, exponent form for very large or very small numbers, plain decimal for everything else.
+- **Q: What does it replace?** A: Java's `int`, `long`, `float` and `double`. JavaScript has one `number` type (a 64-bit float), so `typeof 0xFF` is `"number"` and `5.` is the same value as `5`.
+- **Q: What's the gotcha?** A: Always write octal with the `0o` prefix. A legacy leading zero (`017`) silently means 15 in a normal script and is a `SyntaxError` in strict mode. And skip `.5` and `5.`: they are valid but easy to misread.
+
+```mermaid
+flowchart LR
+    D["42<br/>decimal"] --> N(("number<br/>42"))
+    B["0b101010<br/>binary"] --> N
+    O["0o52<br/>octal"] --> N
+    H["0x2A<br/>hex"] --> N
+    E["4.2e1<br/>exponent"] --> N
+```
+
+| Prefix | Base | Example | Value |
+|:------:|:-----|:--------|:-----:|
+| (none) | 10, decimal | `42` | 42 |
+| `0b` | 2, binary | `0b1010` | 10 |
+| `0o` | 8, octal | `0o52` | 42 |
+| `0x` | 16, hex | `0x2A` | 42 |
+| `e` | exponent (x 10ⁿ) | `1.5e3` | 1500 |
+
+```js
+// 03_chapter_JS_Literals/15_Number.js (excerpt)
+let decimal = 42;
+let binary = 0b1010;  // 10 in decimal
+let octal = 0o52;     // 42 in decimal
+let hex = 0x2A;       // 42 in decimal
+console.log(decimal, binary, octal, hex);  // 42 10 42 42
+
+let float1 = 3.14;
+let float3 = .5;      // valid, but avoid for readability
+let float4 = 5.;      // valid, but avoid for readability
+console.log(float1, float3, float4);       // 3.14 0.5 5
+
+let exp1 = 1.5e3;     // 1.5 * 10^3  = 1500
+let exp2 = 1.5e-3;    // 1.5 * 10^-3 = 0.0015
+let exp3 = 2E10;      // 2 * 10^10   = 20000000000
+console.log(exp1, exp2, exp3);             // 1500 0.0015 20000000000
+
+let h = 0xFF;         // from 14_Literals.js
+console.log(typeof h);                     // number
+```
+
+### 16: Numeric Separators and BigInt
+
+**Concept:** Underscores inside a number literal (`1_000_000`) are visual separators that the engine ignores. BigInt is a separate type for whole numbers too big for `number`: add an `n` to the end (`123n`) or call `BigInt("...")`.
+
+**Why:** Separators make long numbers readable at a glance, and BigInt keeps very large integers exact where `number` would silently round them.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Separators in any long constant (`const TIMEOUT_MS = 30_000`). BigInt when an integer can go past `Number.MAX_SAFE_INTEGER` (9,007,199,254,740,991), for example 64-bit database IDs.
+- **Q: What does it replace?** A: Java's `BigInteger`, but with literal syntax (`10n`) and the normal operators (`+`, `*`, `/`) instead of method calls.
+- **Q: What's the gotcha?** A: You cannot mix the two types: `1n + 1` throws `TypeError: Cannot mix BigInt and other types`. And separators only work in code: `Number("1_000")` is `NaN`.
+
+```mermaid
+flowchart TD
+    Q{"Whole number bigger than<br/>9,007,199,254,740,991?"} -->|No| N["number<br/>1_000_000"]
+    Q -->|Yes| B["BigInt<br/>123456789012345678901234567890n"]
+    N -.->|"2 ** 53 + 1 gives 9007199254740992<br/>(silently rounded)"| W["Precision lost"]:::warn
+    B --> X["Exact at any size"]
+
+    classDef warn fill:#fef3c7,stroke:#d97706,color:#78350f
+```
+
+```js
+// 03_chapter_JS_Literals/16_Numbers_PART2.js
+let million = 1_000_000;      // same as 1000000
+let binarySep = 0b1010_0001;
+let hexSep = 0xFF_FF;
+
+let big = 123456789012345678901234567890n;
+let big2 = BigInt("123456789012345678901234567890");
+let bigFromNum = BigInt(42);
+
+console.log("BigInt literal:", big);          // 123456789012345678901234567890n
+console.log("BigInt from string:", big2);     // 123456789012345678901234567890n
+console.log("BigInt from number:", bigFromNum); // 42n
+console.log("typeof BigInt:", typeof big);    // bigint
+```
+
+### 17: Special Numbers: Infinity and NaN
+
+**Concept:** `Infinity`, `-Infinity` and `NaN` (Not a Number) are special values of type `number`. Dividing by zero gives `Infinity`; math with no numeric answer, like `0 / 0` or `"hello" * 2`, gives `NaN`.
+
+**Why:** JavaScript never throws on bad arithmetic. It returns one of these values and keeps going, so a test can quietly compute `NaN` unless you check for it.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Whenever you convert page text to a number (`Number(priceText)`), check the result with `Number.isNaN()` before you assert on it.
+- **Q: What does it replace?** A: Java's `ArithmeticException` on integer divide-by-zero. JavaScript has no arithmetic exceptions; you get `Infinity` or `NaN` back instead.
+- **Q: What's the gotcha?** A: `NaN` is not equal to anything, itself included: `NaN === NaN` is `false`. Use `Number.isNaN(x)`. The older global `isNaN("hello")` returns `true` because it converts the string first.
+
+```mermaid
+flowchart LR
+    A["1 / 0"] --> I["Infinity"]
+    B["-1 / 0"] --> NI["-Infinity"]
+    C["0 / 0"] --> N["NaN"]
+    D["'hello' * 2"] --> N
+    I --> T{"typeof"}
+    NI --> T
+    N --> T
+    T --> NUM["'number'"]
+```
+
+```js
+// 03_chapter_JS_Literals/17_Special.js
+console.log("Infinity:", Infinity);               // Infinity
+console.log("1 / 0:", 1 / 0);                     // Infinity
+console.log("-1 / 0:", -1 / 0);                   // -Infinity
+console.log("typeof Infinity:", typeof Infinity); // "number"
+
+console.log("NaN:", NaN);                         // NaN
+console.log("0 / 0:", 0 / 0);                     // NaN
+console.log("'hello' * 2:", "hello" * 2);         // NaN
+console.log("typeof NaN:", typeof NaN);           // "number" (quirky!)
+```
+
+---
+
+## Chapter 04: Operators
+
+### 19: Expressions and Data Types
+
+**Concept:** An expression combines values (operands) with operators to produce a new value. `let a = 10 + 3;` uses two operators: `+` computes `13`, then `=` stores it in `a`. Every value has one of eight types: seven primitives (`string`, `number`, `boolean`, `bigint`, `undefined`, `null`, `symbol`) plus `object`.
+
+**Why:** Operators behave differently depending on the types of their operands, so the type list comes before the operator lessons.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Whenever an operator gives a surprising result, ask "what types are the operands?" first. `"5" + 1` is `"51"`, but `"5" - 1` is `4`.
+- **Q: What does it replace?** A: Java's long list of numeric types (`byte`, `short`, `int`, `long`, `float`, `double`, `char`). JavaScript collapses them into `number` and `bigint` and has no `char`.
+- **Q: What's the gotcha?** A: Arrays, `NaN` and `Infinity` are not types of their own. Arrays are objects (`typeof []` is `"object"`, so use `Array.isArray()`), and `NaN` and `Infinity` are values of type `number`.
+
+```mermaid
+flowchart TD
+    V["Every JavaScript value"] --> PRIM["7 primitives"]
+    V --> OBJ["object"]
+    PRIM --> STR["string"]
+    PRIM --> NUM["number<br/>(includes NaN, Infinity)"]
+    PRIM --> BOOL["boolean"]
+    PRIM --> BIG["bigint"]
+    PRIM --> UND["undefined"]
+    PRIM --> NUL["null"]
+    PRIM --> SYM["symbol"]
+    OBJ --> ARR["arrays, functions, dates, ..."]
+```
+
+```js
+// 04_chapter_JS_Operators/19_Arch.js (expanded)
+let a = 10 + 3;     // 2 operators: + computes 13, = stores it
+console.log(a);     // 13
+
+console.log(typeof "pramod");     // string
+console.log(typeof 42);           // number
+console.log(typeof true);         // boolean
+console.log(typeof 42n);          // bigint
+console.log(typeof undefined);    // undefined
+console.log(typeof null);         // object (null is still its own type)
+console.log(typeof Symbol("id")); // symbol
+console.log(typeof [1, 2, 3]);    // object (arrays are objects)
+console.log(typeof NaN);          // number
+```
+
+### 20: Assignment Operators
+
+**Concept:** `=` stores the value on its right in the variable on its left. A `let` variable can be reassigned, even to a value of a different type, and `x1 = x1 + 5` reads the old value, adds 5, and stores the result back.
+
+**Why:** Counters, running totals and retry loops in tests all update a variable from its own previous value.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Every time you store or update a value. For updates, the compound forms say the same thing in less code: `x1 += 5` is `x1 = x1 + 5`.
+- **Q: What does it replace?** A: The same `=` and compound operators as Java, minus the type check. JavaScript lets `x` go from `10` to `"PrrammodDutta"` without complaint; TypeScript brings that check back.
+- **Q: What's the gotcha?** A: `=` assigns, `==` and `===` compare. `if (x = 5)` assigns 5 and is always true, a classic bug that JavaScript does not flag.
+
+```mermaid
+flowchart LR
+    R["read x1<br/>10"] --> A["10 + 5<br/>= 15"] --> W["store in x1<br/>x1 is now 15"]
+```
+
+| Operator | Same as | Example (`x = 10`) | Result |
+|:--------:|:--------|:-------------------|:------:|
+| `=` | | `x = 5` | 5 |
+| `+=` | `x = x + n` | `x += 5` | 15 |
+| `-=` | `x = x - n` | `x -= 5` | 5 |
+| `*=` | `x = x * n` | `x *= 2` | 20 |
+| `/=` | `x = x / n` | `x /= 4` | 2.5 |
+| `%=` | `x = x % n` | `x %= 3` | 1 |
+| `**=` | `x = x ** n` | `x **= 2` | 100 |
+
+```js
+// 04_chapter_JS_Operators/20_Assigment_Op.js
+let x = 10;
+x = "PrrammodDutta";   // let allows a new value, even a new type
+console.log(x);        // PrrammodDutta
+
+let x1 = 10;
+x1 = x1 + 5;           // read 10, add 5, store 15
+console.log(x1);       // 15
+
+x1 += 5;               // shorthand for x1 = x1 + 5
+console.log(x1);       // 20
+```
+
+### 21: Arithmetic Operators
+
+**Concept:** `+`, `-`, `*` and `/` do the usual math, `%` (modulus) gives the remainder after division, and `**` raises to a power. Division never truncates: `10 / 3` is `3.3333333333333335`.
+
+**Why:** Tests compute expected values all the time (totals, page counts, even/odd rows), and `%` answers "is this even?" in one expression.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: `%` for even/odd checks (`n % 2 === 0` means even), `**` for powers (`2 ** 3` is 8), and `/` with `Math.ceil` for page counts (`Math.ceil(25 / 10)` is 3 pages).
+- **Q: What does it replace?** A: Java's integer division: in Java `10 / 3` is `3`, in JavaScript it is `3.3333333333333335`. Use `Math.floor()` or `Math.trunc()` to drop the decimals. `**` replaces `Math.pow()`.
+- **Q: What's the gotcha?** A: `%` keeps the sign of the left side: `-7 % 2` is `-1`, so the odd check `n % 2 == 1` fails for negative numbers. Write `n % 2 !== 0` for odd.
+
+```mermaid
+flowchart TD
+    N["n % 2"] --> Q{"Remainder"}
+    Q -->|"0"| E["Even<br/>100 % 2 = 0"]
+    Q -->|"1 or -1"| O["Odd<br/>101 % 2 = 1<br/>-7 % 2 = -1"]
+```
+
+```js
+// 04_chapter_JS_Operators/21_Arithematic_Op.js
+let a = 10;
+let b = 3;
+
+console.log(a + b);   // 13
+console.log(a - b);   // 7
+console.log(a * b);   // 30
+console.log(a / b);   // 3.3333333333333335
+
+// Modulus -> % -> gives you the remainder
+console.log(a % b);   // 1
+console.log(13 % 7);  // 6
+console.log(101 % 2); // 1  -> odd
+console.log(100 % 2); // 0  -> even
+
+// Exponential ** -> power, 2^3 = 8
+console.log(2 ** 3);  // 8
+console.log(a ** b);  // 1000 (10^3)
+```
+
+### 22: Comparison Operators (Loose vs Strict)
+
+**Concept:** Comparison operators always return a boolean. `==` (loose) converts both sides to the same type before comparing; `===` (strict) compares both value and type with no conversion. `!=` and `!==` are their "not equal" versions, and `>`, `<`, `>=`, `<=` compare order.
+
+**Why:** Assertions are comparisons, and loose equality can let a wrong value pass: `5 == "5"` is `true`.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Use `===` and `!==` by default. Playwright's `expect(x).toBe(y)` is strict as well (it uses `Object.is`), so `expect("5").toBe(5)` fails.
+- **Q: What does it replace?** A: Java's `==` vs `.equals()` split. In JavaScript, `===` compares primitive values directly, so `"abc" === "abc"` is `true` with no `.equals()` call.
+- **Q: What's the gotcha?** A: `>=` is not simply "`>` or `==`": `null >= 0` is `true` while `null == 0` is `false`, because the relational operators convert `null` to `0` and `==` does not.
+
+```mermaid
+flowchart TD
+    L["5 == '5'"] --> LC["Convert: '5' becomes 5"] --> LR["5 == 5: true"]
+    S["5 === '5'"] --> SC{"Same type?<br/>number vs string"} -->|No| SR["false, no conversion"]
+```
+
+| Operator | Name | `5` vs `"5"` | Result |
+|:--------:|:-----|:-------------|:------:|
+| `==` | Loose equal | `5 == "5"` | `true` |
+| `===` | Strict equal | `5 === "5"` | `false` |
+| `!=` | Loose not equal | `5 != "5"` | `false` |
+| `!==` | Strict not equal | `5 !== "5"` | `true` |
+
+```js
+// 04_chapter_JS_Operators/22_Comparsion_Op.js (excerpt)
+console.log(3 > 4);      // false
+console.log(3 < 4);      // true
+console.log(4 >= 4);     // true
+
+console.log(5 == "5");   // true:  loose, compares value only
+console.log(5 === "5");  // false: strict, value + data type
+
+console.log(5 != "5");   // false
+console.log(5 !== "5");  // true
+console.log(5 === 5);    // true
+```
+
+### 23: Logical Operators
+
+**Concept:** `&&` (AND) is true only when both sides are true, `||` (OR) is true when at least one side is true, and `!` (NOT) flips a boolean.
+
+**Why:** Real conditions are rarely a single check: "logged in AND cart not empty", "on staging OR on dev".
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Combining conditions in an `if`, and `||` for defaults: `const baseUrl = process.env.BASE_URL || "http://localhost:3000"`.
+- **Q: What does it replace?** A: The same symbols as Java, but JavaScript returns one of the operands, not always a boolean: `"a" && "b"` is `"b"` and `null || "guest"` is `"guest"`. Both short-circuit: the right side only runs when it is needed.
+- **Q: What's the gotcha?** A: `||` treats every falsy value (`0`, `""`, `null`, `undefined`, `NaN`, `false`) as missing, so `0 || 5` is `5`. When `0` or `""` is a valid value, use `??` instead: `0 ?? 5` is `0`.
+
+```mermaid
+flowchart LR
+    A{"a && b"} -->|"a is falsy"| RA["return a<br/>(b never runs)"]
+    A -->|"a is truthy"| RB["return b"]
+    O{"a || b"} -->|"a is truthy"| OA["return a<br/>(b never runs)"]
+    O -->|"a is falsy"| OB["return b"]
+```
+
+| `a` | `b` | `a && b` | `a \|\| b` | `!a` |
+|:---:|:---:|:--------:|:----------:|:----:|
+| `true` | `true` | `true` | `true` | `false` |
+| `true` | `false` | `false` | `true` | `false` |
+| `false` | `true` | `false` | `true` | `true` |
+| `false` | `false` | `false` | `false` | `true` |
+
+```js
+// 04_chapter_JS_Operators/23_Logical_Op.js (plus short-circuit examples)
+let a = true;
+let b = false;
+
+console.log(a && b);           // false
+console.log(a || b);           // true
+console.log(!a);               // false
+
+console.log(null || "guest");  // guest (default value)
+console.log(0 || 5);           // 5, because 0 is falsy
+console.log(0 ?? 5);           // 0, ?? only replaces null/undefined
+```
+
+### 24: Confusing Comparisons
+
+**Concept:** Because `==` converts types before comparing, it breaks rules you expect from math. `"" == 0` and `"0" == 0` are both `true`, yet `"" == "0"` is `false`, so equality is no longer transitive.
+
+**Why:** These are the classic interview traps, and the same conversion can make a test pass when the page shows `""` where you expected `0`.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: In interviews, and when reviewing code that uses `==`. The fix is always the same: switch to `===`.
+- **Q: What does it replace?** A: Guessing. The rule: when one side is a number, `==` converts the other side to a number (`""` becomes `0`, `"0"` becomes `0`); two strings are compared as text, character by character.
+- **Q: What's the gotcha?** A: The same rule creates more traps: `[] == false` is `true`, `null == 0` is `false` while `null >= 0` is `true`, and `NaN == NaN` is `false`.
+
+```mermaid
+flowchart TD
+    E["empty string ''"] -->|"== 0: converted to number"| Z(("0"))
+    S["string '0'"] -->|"== 0: converted to number"| Z
+    E -.->|"'' == '0': both strings,<br/>compared as text"| F["false"]:::warn
+
+    classDef warn fill:#fef3c7,stroke:#d97706,color:#78350f
+```
+
+```js
+// 04_chapter_JS_Operators/24_Confusing_Comparsion.js
+// Rule of thumb:
+//   ==   → loose equality  (does type coercion, surprising)
+//   ===  → strict equality (no coercion, what you usually want)
+
+console.log("" == 0);    // true, "" coerced to Number → 0
+console.log("0" == 0);   // true, "0" coerced to Number → 0
+console.log("" == "0");  // false, both strings, compared as-is
+// (transitivity broken) -> coerced
+
+// === fixes it
+console.log("" === 0);   // false
+console.log("0" === 0);  // false
+console.log("" === "0"); // false
+```
+
+---
+
 ## Coming Up
 
-- **Chapter 03: Literals**: number, string, boolean, array, and object literals in depth.
+- **Chapter 04: Operators** continues: `25_CC.js` is still empty.
 - Then TypeScript, then Playwright.
