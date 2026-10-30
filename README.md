@@ -114,6 +114,13 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [129: Creating Strings and Converting to a String](#129-creating-strings-and-converting-to-a-string)
   - [130: length, Index, at() and charAt()](#130-length-index-at-and-charat)
   - [131: Searching Inside a String](#131-searching-inside-a-string)
+- [Chapter 17: Objects](#chapter-17-objects)
+  - [132: Objects: Keys, Values, Dot and Bracket](#132-objects-keys-values-dot-and-bracket)
+  - [133: Value vs Reference](#133-value-vs-reference)
+  - [134: Nested Objects and Methods](#134-nested-objects-and-methods)
+  - [136: Adding, Changing and Deleting Properties](#136-adding-changing-and-deleting-properties)
+  - [139: Shallow Copy vs Deep Copy](#139-shallow-copy-vs-deep-copy)
+- [Learning Notes](#learning-notes)
 - [Coming Up](#coming-up)
 
 ---
@@ -137,8 +144,9 @@ flowchart LR
     C12 --> C13["13 Functions<br/>4 types, arrow, IIFE, rest, return"]:::done
     C13 --> C14["14 var, let, const<br/>scope, hoisting, TDZ"]:::done
     C14 --> C15["15 Closures<br/>functions that remember"]:::done
-    C15 --> C16["16 Strings<br/>index, length, search"]:::progress
-    C16 --> TS["TypeScript"]:::planned
+    C15 --> C16["16 Strings<br/>index, length, search"]:::done
+    C16 --> C17["17 Objects<br/>reference, shallow, deep copy"]:::progress
+    C17 --> TS["TypeScript"]:::planned
     TS --> PW["Playwright"]:::planned
 
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
@@ -168,7 +176,8 @@ flowchart LR
 | 13 | Functions | [13_chapter_Functions](13_chapter_Functions/) | ✅ Done | Defining and calling, the 4 function types, expressions and arrow functions, IIFE, rest and spread, `return` |
 | 14 | var, let, const: Scope, Hoisting and TDZ | [14_chapter_Var_Let_Const_Hoisting_TDZ](14_chapter_Var_Let_Const_Hoisting_TDZ/) | ✅ Done | Function scope vs block scope, shadowing, `const`, hoisting, the TDZ, `typeof` in the TDZ, redeclaring `var` |
 | 15 | Closures | [15_chapter_Functions_Closure](15_chapter_Functions_Closure/) | ✅ Done | Inner functions that remember the outer function's variables |
-| 16 | Strings | [16_chapter_String](16_chapter_String/) | 🟡 In progress | Quotes and template literals, `String()`, `length`, index, `at()`, `charAt()`, `includes`, `startsWith`, `endsWith`, `indexOf` |
+| 16 | Strings | [16_chapter_String](16_chapter_String/) | ✅ Done | Quotes and template literals, `String()`, `length`, index, `at()`, `charAt()`, `includes`, `startsWith`, `endsWith`, `indexOf` |
+| 17 | Objects | [17_Objects_JS](17_Objects_JS/) | 🟡 In progress | Keys and values, dot vs bracket, value vs reference, nested objects, methods and `this`, adding and deleting properties, shallow vs deep copy |
 
 ---
 
@@ -181,6 +190,10 @@ LearnJSTSPlaywright4x/
 ├── package.json                            # One dependency: prompt-sync (chapter 08)
 ├── package-lock.json
 ├── assets/images/                          # Banner and chapter cheat-sheet images used in this README
+├── 00_learning/                            # Short explainer notes (see Learning Notes below)
+│   ├── chatAt_vs_At_string.md              # charAt(i) vs at(i)
+│   ├── object_reference_copy_eli5.html     # ELI5 picture page: why let b = a changes a
+│   └── rarely_needed_string_methods.md     # isWellFormed, normalize, legacy HTML wrappers
 ├── 00_chapter_Prompt_Eng/
 │   ├── 00_RICE_POT_FullForm.md             # What each RICE-POT letter means
 │   ├── 01_RICE_POT_Prompt.md               # Worked prompt: Salesforce login (Selenium + TestNG)
@@ -333,10 +346,19 @@ LearnJSTSPlaywright4x/
 │   └── 127_TDZ_TypeOf.js                   # typeof on an undeclared name
 ├── 15_chapter_Functions_Closure/
 │   └── 128_Closure.js                      # An inner function remembers the outer variable
-└── 16_chapter_String/
-    ├── 129_String.js                       # Quotes, template literals, String()
-    ├── 130_String_Fn.js                    # length, [index], at(), charAt(), charCodeAt()
-    └── 131_String_Search.js                # includes, startsWith, endsWith, indexOf
+├── 16_chapter_String/
+│   ├── 129_String.js                       # Quotes, template literals, String()
+│   ├── 130_String_Fn.js                    # length, [index], at(), charAt(), charCodeAt()
+│   └── 131_String_Search.js                # includes, startsWith, endsWith, indexOf
+└── 17_Objects_JS/
+    ├── 132_Objects.js                      # Dot vs bracket access, keys are case-sensitive
+    ├── 133_Object_Copy.js                  # let b = a copies the reference
+    ├── 134.js                              # A big nested test-data object with methods
+    ├── 135.js                              # A method that uses this
+    ├── 136_Normal.js                       # Read, add and change properties
+    ├── 137_Config.js                       # Build a config object, overwrite, delete
+    ├── 138_Call_By_Ref_By_Value.js         # Primitives copy the value, objects the reference
+    └── 139_Shallow_Copy_Deep_Copy.js       # Reference vs ...spread vs structuredClone
 ```
 
 ---
@@ -3812,7 +3834,256 @@ console.log(url.toLowerCase().includes("staging"));   // true
 
 ---
 
+## Chapter 17: Objects
+
+### 132: Objects: Keys, Values, Dot and Bracket
+
+![Anatomy of an object: in let user = { name: "Pramod", address: { city: "Delhi" }, printName() {...} }, name is a key, "Pramod" its value, address a nested object and printName a method; user.name and user["name"] give "Pramod", user.address.city gives "Delhi"; keys are case-sensitive](assets/images/ch17-object-anatomy.png)
+
+**Concept:** An object groups related values under names: `{ status: "pass" }` has the key `status` and the value `"pass"`. You read a value with dot notation (`a.status`) or bracket notation (`a["status"]`).
+
+**Why:** Test data rarely comes as single values: a user, a config or an API response is a bundle of named fields, and an object keeps those fields together.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Dot notation by default. Brackets when the key is stored in a variable (`user[key]`) or is not a valid identifier (`o["first-name"]`).
+- **Q: What does it replace?** A: A pile of loose variables (`userName`, `userEmail`, ...). It is close to a Java `Map<String, Object>`, or a class with fields, without writing a class.
+- **Q: What's the gotcha?** A: Keys are case-sensitive: `status` and `Status` are two different keys (`132_Objects.js`). A missing key gives `undefined`, not an error. And `a.key` looks for a key literally named "key"; to use the variable `key`, write `a[key]`.
+
+```mermaid
+flowchart LR
+    O["a22 = { status: 'pass', Status: 'fail' }"] -->|"a22.status"| P["'pass'"]
+    O -->|"a22['Status']"| F["'fail'"]
+    O -->|"a22.missing"| U["undefined"]
+```
+
+```js
+// 17_Objects_JS/132_Objects.js (plus two extra lookups)
+let a = { status: "pass" };
+console.log(a.status);        // pass  (dot)
+console.log(a["status"]);     // pass  (bracket)
+
+// keys are case sensitive
+let a22 = { status: "pass", Status: "fail" };
+console.log(a22["status"]);   // pass
+console.log(a22["Status"]);   // fail
+
+let key = "status";
+console.log(a[key]);          // pass       (brackets use the variable)
+console.log(a.key);           // undefined  (dot looks for a key named "key")
+```
+
+### 133: Value vs Reference
+
+**Concept:** Copying a primitive (number, string, boolean) copies the value itself, so the two variables are independent. Copying an object copies only the reference (its address), so both variables point to the same object (`133_Object_Copy.js`, `138_Call_By_Ref_By_Value.js`).
+
+**Why:** This is behind many flaky tests: one test "just tweaks" a shared object, and every later test sees the tweak.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Every time you assign or pass an object: assume both names share it unless you made a copy (lesson 139).
+- **Q: What does it replace?** A: Nothing new if you know Java: primitives are copied by value, objects are shared by reference.
+- **Q: What's the gotcha?** A: `const` does not protect you: `const b = a; b.status = "fail"` still changes `a`. And two objects that look the same are not equal: `{ status: "pass" } === { status: "pass" }` is `false`, because `===` compares references, not contents. There is a picture-by-picture ELI5 page for this in [00_learning/object_reference_copy_eli5.html](00_learning/object_reference_copy_eli5.html) (open it locally in a browser).
+
+```mermaid
+flowchart LR
+    subgraph PRIM["primitive: let b = a"]
+        PA["a = 10"]
+        PB["b = 99<br/>its own copy"]
+    end
+    subgraph OBJ["object: let obj2 = obj1"]
+        O1["obj1"] --> BOX["{ val: 99 }<br/>one shared object"]
+        O2["obj2"] --> BOX
+    end
+```
+
+```js
+// 17_Objects_JS/138_Call_By_Ref_By_Value.js
+// Primitives: the value is copied
+let a = 10;
+let b = a;
+b = 99;
+console.log(a);          // 10  (unchanged)
+console.log(b);          // 99
+
+// Objects: the reference is copied, so both point to the same object
+let obj1 = { val: 10 };
+let obj2 = obj1;
+obj2.val = 99;
+console.log(obj1.val);   // 99  (changed through obj2)
+
+// 17_Objects_JS/133_Object_Copy.js (renamed to t1, t2 so this runs as one file)
+let t1 = { status: "pass" };
+let t2 = t1;             // copy the reference
+t2.status = "fail";
+console.log(t1.status);  // fail
+```
+
+### 134: Nested Objects and Methods
+
+**Concept:** A value inside an object can itself be an object or an array (`address`, `skills`, `education` in `134.js`), or a function, which is then called a method. Inside a method, `this` means "the object the method was called on".
+
+**Why:** Real API responses and test-data fixtures are deeply nested, so you need to read paths like `user.address.coordinates.latitude`.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Modelling test data that mirrors an API response; a method such as `getFullAddress()` keeps formatting logic next to the data it formats.
+- **Q: What does it replace?** A: A Java class with fields and methods, written as one literal with no `class` keyword.
+- **Q: What's the gotcha?** A: A missing level in the middle throws: `user.address.city` is a `TypeError` when `address` is missing. Optional chaining (`user.address?.city`) gives `undefined` instead. And `this` depends on how the method is called: after `const f = person.printName;`, calling `f()` no longer has `person` as `this`, so it does not return `"Pramod"`.
+
+```mermaid
+flowchart TD
+    U["user"] --> N["fullName: 'Pramod Dutta'"]
+    U --> A["address"]
+    A --> C["city: 'Bengaluru'"]
+    A --> CO["coordinates"]
+    CO --> LAT["latitude: 12.9716"]
+    U --> S["skills: ['JavaScript', 'Playwright', ...]"]
+    U --> M["getIntroduction()<br/>reads this.fullName"]
+```
+
+```js
+// 17_Objects_JS/134.js (a small excerpt of the synthetic test-data fixture)
+const user = {
+    fullName: "Pramod Dutta",
+    address: {
+        city: "Bengaluru",
+        coordinates: { latitude: 12.9716, longitude: 77.5946 },
+    },
+    skills: ["JavaScript", "Playwright", "API Testing"],
+    employment: { jobTitle: "Senior QA Architect" },
+
+    getIntroduction() {
+        return `Hi, I am ${this.fullName}, a ${this.employment.jobTitle} from ${this.address.city}.`;
+    },
+};
+
+console.log(user.address.coordinates.latitude);  // 12.9716
+console.log(user.skills[1]);                     // Playwright
+console.log(user.getIntroduction());             // Hi, I am Pramod Dutta, a Senior QA Architect from Bengaluru.
+console.log(user.phone?.home);                   // undefined (no error, thanks to ?.)
+
+// 17_Objects_JS/135.js
+const person = {
+    name: "Pramod",
+    printName() { return this.name; },
+};
+console.log(person.printName());                 // Pramod
+```
+
+### 136: Adding, Changing and Deleting Properties
+
+**Concept:** Objects can grow and shrink after they are created: assign to a new key to add it (`user.city = "NYC"`), assign to an existing key to change it, and use `delete` to remove a key completely.
+
+**Why:** Test setup often builds a config step by step (`137_Config.js`) or tweaks one field of a base payload before sending it.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Building config objects, and creating variations of a request body: copy the base object first (lesson 139), then change one field.
+- **Q: What does it replace?** A: Java's `map.put(key, value)` and `map.remove(key)`. With a Java class, you could not add a new field at runtime.
+- **Q: What's the gotcha?** A: Assigning the same key twice keeps only the last value (`timeout` ends up `5000`), and a typo in a key silently creates a new property instead of failing. `delete` removes the key entirely, while `config.browser = undefined` keeps the key with no value (`"browser" in config` is still `true`).
+
+```mermaid
+flowchart LR
+    E["config = {}"] -->|"config.browser = 'Chrome'"| A1["{ browser: 'Chrome' }"]
+    A1 -->|"timeout = 3000,<br/>then timeout = 5000"| A2["{ browser: 'Chrome',<br/>timeout: 5000 }"]
+    A2 -->|"delete config.browser"| A3["{ timeout: 5000 }"]
+```
+
+```js
+// 17_Objects_JS/136_Normal.js
+const user = { name: "John", age: 30, email: "john@example.com" };
+
+console.log(user.name);      // John
+console.log(user["age"]);    // 30
+
+user.city = "NYC";           // add a new key
+user.age = 31;               // change an existing key
+console.log(user);           // { name: 'John', age: 31, email: 'john@example.com', city: 'NYC' }
+
+// 17_Objects_JS/137_Config.js
+let config = {};
+config.browser = "Chrome";
+config.timeout = 3000;
+config.timeout = 5000;       // the latest value wins
+console.log(config);         // { browser: 'Chrome', timeout: 5000 }
+delete config.browser;
+console.log(config);         // { timeout: 5000 }
+```
+
+### 139: Shallow Copy vs Deep Copy
+
+![Reference vs shallow vs deep: with let b = a everything is shared; with let b = { ...a } the inner address object is shared; with let b = structuredClone(a) nothing is shared](assets/images/ch17-reference-shallow-deep.png)
+
+**Concept:** `{ ...obj }` makes a shallow copy: a new outer object, but any nested objects inside are still shared. `structuredClone(obj)` makes a deep copy: every level is new, so nothing is shared.
+
+**Why:** Copying test data before changing it keeps tests independent, but a shallow copy is not enough once the data has nested objects.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Spread for flat objects (no objects or arrays inside); `structuredClone` for anything nested, which covers most API payloads and fixtures.
+- **Q: What does it replace?** A: `let b = a`, which copies nothing at all (lesson 133). In Java terms: a shallow `clone()` vs a hand-written deep copy.
+- **Q: What's the gotcha?** A: A shallow copy looks safe at first: changing `copy1.name` leaves the original alone, but changing `copy1.address.city` changes the original too. And `structuredClone` cannot copy functions: an object with a method, such as `getIntroduction()` in `134.js`, makes it throw a `DataCloneError`.
+
+```mermaid
+flowchart LR
+    subgraph R["let b = a"]
+        RA["a"] --> RO["object"]
+        RB["b"] --> RO
+    end
+    subgraph S["let b = { ...a }"]
+        SA["a"] --> SO1["object"]
+        SB["b"] --> SO2["new object"]
+        SO1 --> SAD["address<br/>(shared)"]
+        SO2 --> SAD
+    end
+    subgraph D["let b = structuredClone(a)"]
+        DA["a"] --> DO1["object"] --> DAD1["address"]
+        DB["b"] --> DO2["new object"] --> DAD2["new address"]
+    end
+```
+
+| Copy with | Change `copy.name` | Change `copy.address.city` |
+|:----------|:-------------------|:---------------------------|
+| `let b = a` | Original changes ❌ | Original changes ❌ |
+| `let b = { ...a }` | Original safe ✅ | Original changes ❌ |
+| `let b = structuredClone(a)` | Original safe ✅ | Original safe ✅ |
+
+```js
+// 17_Objects_JS/139_Shallow_Copy_Deep_Copy.js
+// 1. Call by reference: one object, two names
+let a = { status: "pass" };
+let b = a;
+b.status = "fail";
+console.log(a.status);            // fail   (a changed too!)
+
+// 2. Shallow copy (...spread): new object, but the inner object is shared
+let user1 = { name: "Pramod", address: { city: "Delhi" } };
+let copy1 = { ...user1 };
+copy1.name = "Amit";
+copy1.address.city = "Mumbai";
+console.log(user1.name);          // Pramod  (safe)
+console.log(user1.address.city);  // Mumbai  (changed!)
+
+// 3. Deep copy (structuredClone): everything is new
+let user2 = { name: "Pramod", address: { city: "Delhi" } };
+let copy2 = structuredClone(user2);
+copy2.name = "Amit";
+copy2.address.city = "Mumbai";
+console.log(user2.name);          // Pramod  (safe)
+console.log(user2.address.city);  // Delhi   (safe)
+```
+
+---
+
+## Learning Notes
+
+Short explainers kept in [00_learning/](00_learning/), written while working through the lessons.
+
+| Note | What it explains |
+|:-----|:-----------------|
+| [chatAt_vs_At_string.md](00_learning/chatAt_vs_At_string.md) | `charAt(i)` vs `at(i)` on strings: negative indexes, out-of-range results, with comparison tables |
+| [rarely_needed_string_methods.md](00_learning/rarely_needed_string_methods.md) | `isWellFormed`, `toWellFormed`, `normalize`, `valueOf`, and the legacy HTML wrappers you should never use |
+| [object_reference_copy_eli5.html](00_learning/object_reference_copy_eli5.html) | Why `let b = a` changes `a`, explained like you are 5 with step-by-step diagrams. GitHub shows HTML as source, so download it or open it locally in a browser. |
+
+---
+
 ## Coming Up
 
-- **Chapter 16: Strings** continues.
+- **Chapter 17: Objects** continues.
 - Then TypeScript, then Playwright.
