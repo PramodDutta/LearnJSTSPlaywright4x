@@ -120,6 +120,12 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [134: Nested Objects and Methods](#134-nested-objects-and-methods)
   - [136: Adding, Changing and Deleting Properties](#136-adding-changing-and-deleting-properties)
   - [139: Shallow Copy vs Deep Copy](#139-shallow-copy-vs-deep-copy)
+- [Chapter 18: Multi-Dimensional Arrays and Patterns](#chapter-18-multi-dimensional-arrays-and-patterns)
+  - [140: 2D Arrays: Rows and Columns](#140-2d-arrays-rows-and-columns)
+  - [142: Looping Over a 2D Array](#142-looping-over-a-2d-array)
+  - [143: Row Totals with map and reduce](#143-row-totals-with-map-and-reduce)
+  - [144: Right and Left Triangle Patterns](#144-right-and-left-triangle-patterns)
+  - [146: Pyramid Pattern](#146-pyramid-pattern)
 - [Learning Notes](#learning-notes)
 - [Coming Up](#coming-up)
 
@@ -145,8 +151,9 @@ flowchart LR
     C13 --> C14["14 var, let, const<br/>scope, hoisting, TDZ"]:::done
     C14 --> C15["15 Closures<br/>functions that remember"]:::done
     C15 --> C16["16 Strings<br/>index, length, search"]:::done
-    C16 --> C17["17 Objects<br/>reference, shallow, deep copy"]:::progress
-    C17 --> TS["TypeScript"]:::planned
+    C16 --> C17["17 Objects<br/>reference, shallow, deep copy"]:::done
+    C17 --> C18["18 2D Arrays and Patterns<br/>grid[row][col], star patterns"]:::progress
+    C18 --> TS["TypeScript"]:::planned
     TS --> PW["Playwright"]:::planned
 
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
@@ -177,7 +184,8 @@ flowchart LR
 | 14 | var, let, const: Scope, Hoisting and TDZ | [14_chapter_Var_Let_Const_Hoisting_TDZ](14_chapter_Var_Let_Const_Hoisting_TDZ/) | ✅ Done | Function scope vs block scope, shadowing, `const`, hoisting, the TDZ, `typeof` in the TDZ, redeclaring `var` |
 | 15 | Closures | [15_chapter_Functions_Closure](15_chapter_Functions_Closure/) | ✅ Done | Inner functions that remember the outer function's variables |
 | 16 | Strings | [16_chapter_String](16_chapter_String/) | ✅ Done | Quotes and template literals, `String()`, `length`, index, `at()`, `charAt()`, `includes`, `startsWith`, `endsWith`, `indexOf` |
-| 17 | Objects | [17_Objects_JS](17_Objects_JS/) | 🟡 In progress | Keys and values, dot vs bracket, value vs reference, nested objects, methods and `this`, adding and deleting properties, shallow vs deep copy |
+| 17 | Objects | [17_Objects_JS](17_Objects_JS/) | ✅ Done | Keys and values, dot vs bracket, value vs reference, nested objects, methods and `this`, adding and deleting properties, shallow vs deep copy |
+| 18 | Multi-Dimensional Arrays and Patterns | [18_Multi_Dimensions_Array](18_Multi_Dimensions_Array/) | 🟡 In progress | 2D arrays, `grid[row][col]`, nested loops over a grid, row totals with `map` and `reduce`, triangle and pyramid star patterns |
 
 ---
 
@@ -350,15 +358,23 @@ LearnJSTSPlaywright4x/
 │   ├── 129_String.js                       # Quotes, template literals, String()
 │   ├── 130_String_Fn.js                    # length, [index], at(), charAt(), charCodeAt()
 │   └── 131_String_Search.js                # includes, startsWith, endsWith, indexOf
-└── 17_Objects_JS/
-    ├── 132_Objects.js                      # Dot vs bracket access, keys are case-sensitive
-    ├── 133_Object_Copy.js                  # let b = a copies the reference
-    ├── 134.js                              # A big nested test-data object with methods
-    ├── 135.js                              # A method that uses this
-    ├── 136_Normal.js                       # Read, add and change properties
-    ├── 137_Config.js                       # Build a config object, overwrite, delete
-    ├── 138_Call_By_Ref_By_Value.js         # Primitives copy the value, objects the reference
-    └── 139_Shallow_Copy_Deep_Copy.js       # Reference vs ...spread vs structuredClone
+├── 17_Objects_JS/
+│   ├── 132_Objects.js                      # Dot vs bracket access, keys are case-sensitive
+│   ├── 133_Object_Copy.js                  # let b = a copies the reference
+│   ├── 134.js                              # A big nested test-data object with methods
+│   ├── 135.js                              # A method that uses this
+│   ├── 136_Normal.js                       # Read, add and change properties
+│   ├── 137_Config.js                       # Build a config object, overwrite, delete
+│   ├── 138_Call_By_Ref_By_Value.js         # Primitives copy the value, objects the reference
+│   └── 139_Shallow_Copy_Deep_Copy.js       # Reference vs ...spread vs structuredClone
+└── 18_Multi_Dimensions_Array/
+    ├── 140_MDArrays.js                     # A 1D array (a plain list)
+    ├── 141_2D.js                           # A 3 x 3 grid: grid[row][col], rows and columns
+    ├── 142_REAL_Exmaple.js                 # Nested loops over a test-results matrix
+    ├── 143_array_Fn.js                     # Row totals with map + reduce
+    ├── 144_Right_Hand_Pattern.js           # Right triangle: 1, 2, 3 stars
+    ├── 145_Left_Hand_Triablge_Pattern.js   # Upside-down triangle: 3, 2, 1 stars
+    └── 146_Pyamid_Pattern.js               # Centered pyramid: spaces + stars
 ```
 
 ---
@@ -4071,6 +4087,233 @@ console.log(user2.address.city);  // Delhi   (safe)
 
 ---
 
+## Chapter 18: Multi-Dimensional Arrays and Patterns
+
+### 140: 2D Arrays: Rows and Columns
+
+![2D arrays: grid[row][col]. In a 3 x 3 grid of 10 to 90, grid[1][2] is 60; grid.length is 3 rows and grid[0].length is 3 columns; row first, then column](assets/images/ch18-2d-grid.png)
+
+**Concept:** A 2D array is an array whose items are arrays, and each inner array is one row. `grid[1][2]` means "row 1, then column 2". A plain list such as `["pass", "fail", "pass"]` (`140_MDArrays.js`) is a 1D array.
+
+**Why:** Tables are everywhere in testing (data-driven test cases, the rows and cells of a page table, a CSV file), and a 2D array holds a whole table in one variable.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Data-driven tests with one row per test case, or the rows and cells you read out of an HTML table.
+- **Q: What does it replace?** A: Java's `int[][] grid`. Unlike Java, rows can have different lengths ("jagged" arrays) and mix types.
+- **Q: What's the gotcha?** A: A row that doesn't exist throws: `grid[7][7]` is `TypeError: Cannot read properties of undefined (reading '7')`, while a missing column only gives `undefined` (`grid[0][7]`). And `new Array(3).fill([])` puts the same inner array in every row; build separate rows with `Array.from({ length: 3 }, () => [])`.
+
+```mermaid
+flowchart LR
+    G["grid"] --> R0["row 0: [10, 20, 30]"]
+    G --> R1["row 1: [40, 50, 60]"]
+    G --> R2["row 2: [70, 80, 90]"]
+    R1 -->|"column [2]"| C["60"]
+```
+
+```js
+// 18_Multi_Dimensions_Array/141_2D.js (plus two extra lookups)
+let grid = [
+    [10, 20, 30],
+    [40, 50, 60],
+    [70, 80, 90]
+];
+
+console.log(grid[0][0]);        // 10
+console.log(grid[1][2]);        // 60: row 1, column 2
+console.log(grid[0][7]);        // undefined: column 7 doesn't exist
+// console.log(grid[7][7]);     TypeError: row 7 doesn't exist
+
+grid[0][0] = 99;
+console.log(grid);              // [ [ 99, 20, 30 ], [ 40, 50, 60 ], [ 70, 80, 90 ] ]
+
+console.log(grid.length);       // 3 rows
+console.log(grid[0].length);    // 3 columns
+```
+
+### 142: Looping Over a 2D Array
+
+**Concept:** Two nested loops walk a 2D array: the outer loop picks a row (`i`), the inner loop visits each cell in that row (`j`), and `testMatrix[i][j]` is the current cell.
+
+**Why:** Printing, checking or summing every cell of a table needs this pattern, for example a test matrix of test name, status and response code.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Whenever you need every cell: printing a results table, checking every cell of a UI table, or searching for a value.
+- **Q: What does it replace?** A: Writing `testMatrix[0][0]`, `testMatrix[0][1]`, ... by hand. Java's nested `for` over an `int[][]` works the same way.
+- **Q: What's the gotcha?** A: Use `testMatrix[i].length` as the inner limit rather than the first row's length, so rows of different lengths still work. And `process.stdout.write` keeps the cells on one line, while `console.log("")` ends the row: the same trick the star patterns use.
+
+```mermaid
+flowchart TD
+    I["outer loop: i = 0, 1, 2<br/>(rows)"] --> J["inner loop: j = 0, 1, 2<br/>(cells in row i)"]
+    J --> W["write testMatrix[i][j] + ' '"]
+    W -->|"next j"| J
+    J -->|"row done"| NL["console.log('') ends the line"]
+    NL -->|"next i"| I
+```
+
+```js
+// 18_Multi_Dimensions_Array/142_REAL_Exmaple.js (plus a for...of version)
+let testMatrix = [
+    ["login", "pass", 200],
+    ["checkout", "fail", 404],
+    ["search", "pass", 180]
+];
+
+for (let i = 0; i < testMatrix.length; i++) {
+    for (let j = 0; j < testMatrix[i].length; j++) {
+        process.stdout.write(testMatrix[i][j] + " ");
+    }
+    console.log("");
+}
+// login pass 200
+// checkout fail 404
+// search pass 180
+
+// the same table with for...of and join
+for (const row of testMatrix) {
+    console.log(row.join(" "));
+}
+```
+
+### 143: Row Totals with map and reduce
+
+**Concept:** `scores.map(row => row.reduce((a, b) => a + b))` turns each row into one number: `map` visits every row, and `reduce` adds up the cells inside that row.
+
+**Why:** Totals and averages per row (marks per student, failures per suite, time per test run) become a one-liner instead of two nested loops.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Any per-row summary: `map` gives one result per row, and `reduce` folds a row's cells into a single value.
+- **Q: What does it replace?** A: Nested `for` loops with a running-total variable; in Java, `Arrays.stream(row).sum()`.
+- **Q: What's the gotcha?** A: Without a starting value, `reduce` throws on an empty row: `TypeError: Reduce of empty array with no initial value`. Pass `0` as the second argument: `row.reduce((a, b) => a + b, 0)`.
+
+```mermaid
+flowchart LR
+    R0["[85, 90, 78]"] -->|"reduce: a + b"| T0["253"]
+    R1["[60, 45, 70]"] -->|"reduce: a + b"| T1["175"]
+    R2["[95, 88, 92]"] -->|"reduce: a + b"| T2["275"]
+    T0 --> M["map collects<br/>[253, 175, 275]"]
+    T1 --> M
+    T2 --> M
+```
+
+```js
+// 18_Multi_Dimensions_Array/143_array_Fn.js (plus a safer version)
+let scores = [
+    [85, 90, 78],   // student 0
+    [60, 45, 70],   // student 1
+    [95, 88, 92]    // student 2
+];
+
+let rowsSum = scores.map(row => row.reduce((a, b) => a + b));
+console.log(rowsSum);                     // [ 253, 175, 275 ]
+
+// safer: start at 0, so an empty row gives 0 instead of an error
+let safe = [[], [1, 2]].map(row => row.reduce((a, b) => a + b, 0));
+console.log(safe);                        // [ 0, 3 ]
+```
+
+### 144: Right and Left Triangle Patterns
+
+**Concept:** A star pattern is a pair of nested loops: the outer loop picks the row and the inner loop prints that row's stars. In `144_Right_Hand_Pattern.js` row `i` gets `i + 1` stars (1, 2, 3); in `145_Left_Hand_Triablge_Pattern.js` the outer loop counts down, so the rows get 3, 2, 1 stars.
+
+**Why:** Pattern printing is the classic interview drill for nested loops: if you can predict the stars, you understand how the two loops work together.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Interview practice. Work out "how many stars on row `i`?" first, then turn that answer into the inner loop's condition.
+- **Q: What does it replace?** A: Hard-coding every line. With `"*".repeat(k)` you can even drop the inner loop: `console.log("*".repeat(i + 1))`.
+- **Q: What's the gotcha?** A: The start values change the conditions: 144 counts `i` from 0 and `j` from 0 with `j <= i`, while 145 counts `i` from 3 down to 1 and `j` from 1. Check the comments against the real output, too: 144's comment draws `* *` with spaces but the code prints `**`, and 145's comment draws 5 rows while `n = 3` prints 3.
+
+```mermaid
+flowchart LR
+    subgraph RT["144: i = 0, 1, 2"]
+        A1["i = 0: *"] --> A2["i = 1: **"] --> A3["i = 2: ***"]
+    end
+    subgraph LT["145: i = 3, 2, 1"]
+        B1["i = 3: ***"] --> B2["i = 2: **"] --> B3["i = 1: *"]
+    end
+```
+
+| File | Outer loop | Inner loop | Output with `n = 3` |
+|:-----|:-----------|:-----------|:--------------------|
+| `144_Right_Hand_Pattern.js` | `i = 0; i < n; i++` | `j = 0; j <= i` | `*`, `**`, `***` |
+| `145_Left_Hand_Triablge_Pattern.js` | `i = n; i >= 1; i--` | `j = 1; j <= i` | `***`, `**`, `*` |
+
+```js
+// 18_Multi_Dimensions_Array/144_Right_Hand_Pattern.js
+let n = 3;
+for (let i = 0; i < n; i++) {
+    for (let j = 0; j <= i; j++) {
+        process.stdout.write("*");
+    }
+    console.log("");
+}
+// *
+// **
+// ***
+
+// 18_Multi_Dimensions_Array/145_Left_Hand_Triablge_Pattern.js
+for (let i = n; i >= 1; i--) {
+    for (let j = 1; j <= i; j++) {
+        process.stdout.write("*");
+    }
+    console.log("");
+}
+// ***
+// **
+// *
+```
+
+### 146: Pyramid Pattern
+
+![Pyramid: spaces plus stars. With n = 3, row 1 has 2 spaces and 1 star, row 2 has 1 space and 3 stars, row 3 has 0 spaces and 5 stars; spaces = n - i and stars = 2 * i - 1](assets/images/ch18-pyramid.png)
+
+**Concept:** A centered pyramid needs two inner loops per row: first `n - i` spaces to push the stars to the right, then `2 * i - 1` stars. `146_Pyamid_Pattern.js` builds each row as a string and prints it once.
+
+**Why:** It adds a second rule per row (spaces and stars), which makes it the usual next step after simple triangles in interviews.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Interview drills. The same "work out the count for each row" thinking applies to any loop that formats output.
+- **Q: What does it replace?** A: The two inner loops can be replaced by `" ".repeat(n - i) + "*".repeat(2 * i - 1)`.
+- **Q: What's the gotcha?** A: Building the row as a string and calling `console.log(row)` once also works in a browser console, while `process.stdout.write` exists only in Node.
+
+```mermaid
+flowchart LR
+    I["row i"] --> S["n - i spaces"]
+    S --> T["2 * i - 1 stars"]
+    T --> P["console.log(row)"]
+```
+
+| Row `i` | Spaces (`n - i`) | Stars (`2 * i - 1`) | Printed |
+|:-------:|:----------------:|:-------------------:|:--------|
+| 1 | 2 | 1 | `  *` |
+| 2 | 1 | 3 | ` ***` |
+| 3 | 0 | 5 | `*****` |
+
+```js
+// 18_Multi_Dimensions_Array/146_Pyamid_Pattern.js (plus a repeat() version)
+let n = 3;
+
+for (let i = 1; i <= n; i++) {
+    let row = "";
+    for (let j = 1; j <= n - i; j++) {
+        row += " ";              // spaces push the stars to the right
+    }
+    for (let j = 1; j <= 2 * i - 1; j++) {
+        row = row + "*";         // 1, 3, then 5 stars
+    }
+    console.log(row);
+}
+//   *
+//  ***
+// *****
+
+// the same pyramid with repeat()
+for (let i = 1; i <= n; i++) {
+    console.log(" ".repeat(n - i) + "*".repeat(2 * i - 1));
+}
+```
+
+---
+
 ## Learning Notes
 
 Short explainers kept in [00_learning/](00_learning/), written while working through the lessons.
@@ -4085,5 +4328,5 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 
 ## Coming Up
 
-- **Chapter 17: Objects** continues.
+- **Chapter 18: Multi-Dimensional Arrays and Patterns** continues.
 - Then TypeScript, then Playwright.
