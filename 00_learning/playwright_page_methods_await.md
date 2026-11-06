@@ -8,7 +8,7 @@ test('uses await in a Playwright test', async ({ page }) => {
 });
 ```
 
-Checked against the type definitions of Playwright 1.65.0: 118 members in total. **80 methods return a promise and need `await`**, 28 methods return straight away, and 10 are properties.
+Checked against the type definitions of Playwright 1.65.0: 118 members in total. **80 methods return a promise and need `await`**, 28 methods return straight away, and 10 are properties. The tables show required arguments only, so optional ones like `options` are left out.
 
 ## The rule
 
@@ -55,7 +55,7 @@ const title = await page.title();                // Promise<string>: await
 | `page.getByTitle(text)` | `Locator` | ❌ No | Finds by the `title` attribute |
 | `page.getByTestId(testId)` | `Locator` | ❌ No | Finds by `data-testid` |
 | `page.getByRef(ref)` | `Locator` | ❌ No | Finds by an aria ref (like `e2`) from `ariaSnapshot()` |
-| `page.frameLocator()` | `FrameLocator` | ❌ No | Enters an iframe so you can locate inside it |
+| `page.frameLocator(selector?)` | `FrameLocator` | ❌ No | Enters an iframe so you can locate inside it |
 
 ### Page information
 
@@ -145,7 +145,7 @@ const title = await page.title();                // Promise<string>: await
 | `page.waitForRequest(urlOrPredicate)` | `Promise<Request>` | ✅ Yes | Waits for a matching network request |
 | `page.waitForEvent(event)` | `Promise<event data>` | ✅ Yes | Waits for a page event, like `popup` or `download` |
 | `page.waitForFunction(pageFunction)` | `Promise<JSHandle>` | ✅ Yes | Waits until a function in the page returns a truthy value |
-| `page.waitForLoadState()` | `Promise<void>` | ✅ Yes | Waits for a load state. Usually not needed, because actions auto-wait |
+| `page.waitForLoadState(state?)` | `Promise<void>` | ✅ Yes | Waits for a load state. Usually not needed, because actions auto-wait |
 | `page.waitForSelector(selector)` | `Promise<ElementHandle \| null>` | ✅ Yes | Waits for a selector. The docs say to use web assertions or `locator.waitFor()` instead |
 | `page.waitForTimeout(timeout)` | `Promise<void>` | ✅ Yes | Waits a fixed time. The docs say never to use it in production: tests get flaky |
 | `page.waitForNavigation()` | `Promise<Response \| null>` | ✅ Yes | **Deprecated.** Use `waitForURL()` instead |
