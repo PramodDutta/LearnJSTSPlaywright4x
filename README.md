@@ -417,7 +417,7 @@ LearnJSTSPlaywright4x/
 │   └── 161_IQ.js                           # Interview drills: chains, throw, finally
 └── 21_Async_Await/
     ├── 162_Async_Await.js                  # async function + await on an API call
-    ├── 163_AA.js                           # .then on a plain function, try/catch/finally
+    ├── 163_AA.js                           # An async function's promise, try/catch/finally
     ├── 164_Playwright.spec.ts              # await page.goto in a real Playwright test
     ├── 165_Playwright2.spec.ts             # await on page.goto and on your own async function
     ├── 166_SEQ.executin.js                 # Sequential awaits: about 3 seconds
@@ -4782,7 +4782,7 @@ console.log(apiRequest());   // Promise { { status: 200 } }: no await, so you ge
 **Q&A: why use this?**
 - **Q: When do I reach for it?** A: When a step can fail and you want to handle that yourself, like logging a `503` and carrying on. Put cleanup that must always happen in `finally`.
 - **Q: What does it replace?** A: `.then().catch().finally()` chains (lesson 155). The keywords work like Java's `try/catch/finally`.
-- **Q: What's the gotcha?** A: `try/catch` only catches what you `await`: `try { Promise.reject("nope"); } catch (e) {}` still crashes the script with exit code 1. And `.then()` only exists on a promise, so `163_AA.js` stops at line 5 with `TypeError: getTestResults(...).then is not a function`, and `testAPI()` never runs, because `getTestResults` isn't `async`. Adding `async` fixes it.
+- **Q: What's the gotcha?** A: `try/catch` only catches what you `await`: `try { Promise.reject("nope"); } catch (e) {}` still crashes the script with exit code 1. And `.then()` only exists on a promise, so calling it on a normal function's result throws a `TypeError` (see the table). Also, `Promise.resolve` is not a constructor: `return new Promise.resolve("abc")` in `163_AA.js` throws `TypeError: Promise.resolve is not a constructor` as soon as the function is called, so write `Promise.resolve("abc")`. It doesn't show today only because the file never calls that function.
 
 ```mermaid
 flowchart TD
@@ -4799,14 +4799,20 @@ flowchart TD
 | `async`, with `()`: `getTestResults().then(...)` | Works |
 
 ```js
-// 21_Async_Await/163_AA.js (with async added, so the file runs)
+// 21_Async_Await/163_AA.js (Promise.resolve without new, and the calls switched on)
 async function getTestResults() {
-    return "Pass";
+    return Promise.resolve("abc");
 }
 
 getTestResults().then(function (results) {
-    console.log(results);               // Pass
+    console.log(results);               // abc
 });
+
+async function test() {
+    let r = await getTestResults();
+    console.log(r);                     // abc
+}
+test();
 
 async function testAPI() {
     try {
