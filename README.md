@@ -137,6 +137,11 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [161: Promise Interview Questions](#161-promise-interview-questions)
 - [Chapter 21: Async and Await](#chapter-21-async-and-await)
   - [162: async and await](#162-async-and-await)
+  - [163: try, catch and finally](#163-try-catch-and-finally)
+  - [164: await in a Playwright Test](#164-await-in-a-playwright-test)
+  - [166: Sequential vs Parallel](#166-sequential-vs-parallel)
+  - [168: Retry Pattern](#168-retry-pattern)
+  - [169: Async Interview Questions](#169-async-interview-questions)
 - [Learning Notes](#learning-notes)
 - [Coming Up](#coming-up)
 
@@ -166,7 +171,7 @@ flowchart LR
     C17 --> C18["18 2D Arrays and Patterns<br/>grid[row][col], star patterns"]:::done
     C18 --> C19["19 Callbacks<br/>sync, async, callback hell"]:::done
     C19 --> C20["20 Promises<br/>then, catch, all, race"]:::done
-    C20 --> C21["21 Async and Await"]:::progress
+    C20 --> C21["21 Async and Await<br/>try/catch, parallel, retry"]:::progress
     C21 --> TS["TypeScript"]:::planned
     TS --> PW["Playwright"]:::planned
 
@@ -202,7 +207,7 @@ flowchart LR
 | 18 | Multi-Dimensional Arrays and Patterns | [18_Multi_Dimensions_Array](18_Multi_Dimensions_Array/) | ✅ Done | 2D arrays, `grid[row][col]`, nested loops over a grid, row totals with `map` and `reduce`, triangle and pyramid star patterns |
 | 19 | Callbacks | [19_Callback](19_Callback/) | ✅ Done | Passing functions, sync vs async callbacks, `setTimeout`, callback hell |
 | 20 | Promises | [20_Promise](20_Promise/) | ✅ Done | `then`, `catch`, `finally`, chaining, `Promise.all`, `allSettled`, `race`, interview drills |
-| 21 | Async and Await | [21_Async_Await](21_Async_Await/) | 🟡 In progress | `async` functions, `await`, `try/catch` |
+| 21 | Async and Await | [21_Async_Await](21_Async_Await/) | 🟡 In progress | `async` functions, `await`, `try/catch/finally`, `await` in Playwright tests, sequential vs parallel, retries, interview drills |
 
 ---
 
@@ -218,6 +223,7 @@ LearnJSTSPlaywright4x/
 ├── 00_learning/                            # Short explainer notes (see Learning Notes below)
 │   ├── chatAt_vs_At_string.md              # charAt(i) vs at(i)
 │   ├── object_reference_copy_eli5.html     # ELI5 picture page: why let b = a changes a
+│   ├── playwright_page_methods_await.md    # Every page. method and whether it needs await
 │   └── rarely_needed_string_methods.md     # isWellFormed, normalize, legacy HTML wrappers
 ├── 00_chapter_Prompt_Eng/
 │   ├── 00_RICE_POT_FullForm.md             # What each RICE-POT letter means
@@ -410,7 +416,16 @@ LearnJSTSPlaywright4x/
 │   ├── 160_Promise.race.js                 # Promise.race: first to finish wins
 │   └── 161_IQ.js                           # Interview drills: chains, throw, finally
 └── 21_Async_Await/
-    └── 162_Async_Await.js                  # Notes on async and await (code to come)
+    ├── 162_Async_Await.js                  # async function + await on an API call
+    ├── 163_AA.js                           # .then on a plain function, try/catch/finally
+    ├── 164_Playwright.spec.ts              # await page.goto in a real Playwright test
+    ├── 165_Playwright2.spec.ts             # await on page.goto and on your own async function
+    ├── 166_SEQ.executin.js                 # Sequential awaits: about 3 seconds
+    ├── 167_Parallel_Ex.js                  # Promise.all: about 1 second
+    ├── 168_API_Flaky_Finder.js             # Start of a retry helper for flaky APIs
+    ├── 169_IQ.js                           # Interview drills: then, await, steps in order
+    ├── 170_IQ.js                           # Interview drills: try, catch, finally
+    └── 171_IQ.js                           # Interview drill: prints A, B, D, C
 ```
 
 ---
@@ -427,7 +442,7 @@ node --version                              # v18+ (tested on v22)
 node 01_chapter_JS_Basics/01_HelloWorld.js  # Hello World!
 ```
 
-Every lesson file runs the same way: `node <chapter folder>/<file>.js`.
+Every `.js` lesson runs the same way: `node <chapter folder>/<file>.js`. The `.spec.ts` files in Chapter 21 run with Playwright instead (see lesson 164).
 
 ---
 
@@ -4723,45 +4738,299 @@ Promise.reject("Test failed")
 **Why:** This is how modern Playwright tests are written: `await page.goto(url)`, then `await page.click("#login")`.
 
 **Q&A: why use this?**
-- **Q: When do I reach for it?** A: Anywhere you have promises, which means every Playwright action and API call. Wrap `await` in `try/catch` to handle failures.
+- **Q: When do I reach for it?** A: Anywhere you have promises, which means every Playwright action and API call.
 - **Q: What does it replace?** A: `.then()` chains (lesson 157) and callback hell (lesson 151): same flow, written top to bottom.
-- **Q: What's the gotcha?** A: Forget `await` and you get the promise instead of the value: `console.log(getData())` prints `Promise { 'Data' }`. In Playwright, a missing `await` is a classic cause of flaky tests. And `await` inside a normal function is `SyntaxError: await is only valid in async functions and the top level bodies of modules`.
+- **Q: What's the gotcha?** A: Forget `await` and you get the promise instead of the value: `console.log(apiRequest())` prints `Promise { { status: 200 } }`. In Playwright, a missing `await` is a classic cause of flaky tests. And `await` inside a normal function is `SyntaxError: await is only valid in async functions and the top level bodies of modules`.
 
 ```mermaid
 sequenceDiagram
-    participant M as main()
-    participant G as getData()
-    M->>G: await getData()
-    Note over M: main pauses here, other code can run
-    G-->>M: "Data"
-    M->>M: console.log("await:", value)
+    participant R as runAPIRequest()
+    participant A as apiRequest()
+    R->>A: await apiRequest()
+    Note over R: runAPIRequest pauses here, other code can run
+    A-->>R: { status: 200 }
+    R->>R: console.log("API status:", response.status)
 ```
 
-`162_Async_Await.js` has only two notes so far, so the example below was written for this README to show both of them.
-
 ```js
-// 21_Async_Await/162_Async_Await.js (the notes)
+// 21_Async_Await/162_Async_Await.js (plus the last line, showing a missing await)
 // An async function always returns a promise.
 // await reads the resolved value inside another async function.
 
-// A small example of both notes
-async function getData() {
-    return "Data";
+function apiRequest() {
+    return new Promise(function (resolve) {
+        resolve({ status: 200 });
+    });
 }
 
-console.log(getData());              // Promise { 'Data' }: no await, so you get the promise
+async function runAPIRequest() {
+    let response = await apiRequest();
+    console.log("API status:", response.status);   // API status: 200
+}
 
-async function main() {
-    const value = await getData();
-    console.log("await:", value);    // await: Data
+runAPIRequest();
 
+console.log(apiRequest());   // Promise { { status: 200 } }: no await, so you get the promise
+```
+
+### 163: try, catch and finally
+
+**Concept:** Inside an `async` function, a rejected promise acts like an error thrown at the `await` line: `catch` receives it, and `finally` always runs afterwards.
+
+**Why:** Tests need to report a failed API call and still clean up, whether or not the step worked.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When a step can fail and you want to handle that yourself, like logging a `503` and carrying on. Put cleanup that must always happen in `finally`.
+- **Q: What does it replace?** A: `.then().catch().finally()` chains (lesson 155). The keywords work like Java's `try/catch/finally`.
+- **Q: What's the gotcha?** A: `try/catch` only catches what you `await`: `try { Promise.reject("nope"); } catch (e) {}` still crashes the script with exit code 1. And `.then()` only exists on a promise, so `163_AA.js` stops at line 5 with `TypeError: getTestResults(...).then is not a function`, and `testAPI()` never runs, because `getTestResults` isn't `async`. Adding `async` fixes it.
+
+```mermaid
+flowchart TD
+    T["try: await Promise.reject('503 Service Unavailable')"] -->|"rejected"| C["catch: Error 503 Service Unavailable"]
+    T -->|"resolved"| R["console.log('Result', result)"]
+    C --> F["finally: Clean up!!"]
+    R --> F
+```
+
+| Code | Result |
+|:-----|:-------|
+| Not `async`: `getTestResults().then(...)` | `TypeError: getTestResults(...).then is not a function` |
+| `async`, no `()`: `getTestResults.then(...)` | `TypeError: getTestResults.then is not a function` |
+| `async`, with `()`: `getTestResults().then(...)` | Works |
+
+```js
+// 21_Async_Await/163_AA.js (with async added, so the file runs)
+async function getTestResults() {
+    return "Pass";
+}
+
+getTestResults().then(function (results) {
+    console.log(results);               // Pass
+});
+
+async function testAPI() {
     try {
-        await Promise.reject(new Error("Boom"));
-    } catch (e) {
-        console.log("caught:", e.message);   // caught: Boom
+        let result = await Promise.reject("503 Service Unavailable");
+        console.log('Result', result);  // skipped
+    } catch (error) {
+        console.log('Error', error);    // Error 503 Service Unavailable
+    } finally {
+        console.log("Clean up!!");      // Clean up!!
     }
 }
-main();
+
+testAPI();
+```
+
+### 164: await in a Playwright Test
+
+**Concept:** A Playwright test body is an `async` arrow function, and `page` is a fixture that Playwright passes into it. Anything that returns a promise, like `page.goto()`, needs `await`.
+
+**Why:** This is where the whole chapter pays off: every test you write uses it.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: In every Playwright test. [playwright_page_methods_await.md](00_learning/playwright_page_methods_await.md) lists every `page` method and whether it needs `await`. Your own async helpers need it too: `let c = await getExmaple();` in `165_Playwright2.spec.ts`.
+- **Q: What does it replace?** A: Selenium's blocking Java calls: `driver.get(url)` waits by itself, while in Playwright you write `await page.goto(url)`.
+- **Q: What's the gotcha?** A: `node` can't run these files, and this repo doesn't install Playwright yet (`package.json` lists only `prompt-sync`). Run `npm i -D @playwright/test` and `npx playwright install`, then `npx playwright test`. Also, `page.goto("")` in `165_Playwright2.spec.ts` fails with `Cannot navigate to invalid URL`, so give it a real URL.
+
+```mermaid
+sequenceDiagram
+    participant Runner as Playwright runner
+    participant Test as Your async function
+    participant Browser
+    Runner->>Test: calls it with { page }
+    Test->>Browser: await page.goto(url)
+    Browser-->>Test: page loaded
+    Test->>Browser: await expect(link).toBeVisible()
+    Browser-->>Test: link is visible
+    Test-->>Runner: test passed
+```
+
+```ts
+// 21_Async_Await/164_Playwright.spec.ts (extended to show await and no await side by side)
+import { test, expect } from '@playwright/test';
+
+test('uses await in a Playwright test', async ({ page }) => {
+    await page.goto('https://playwright.dev/');                     // Promise: await
+    const link = page.getByRole('link', { name: 'Get started' });   // Locator: no await
+    await expect(link).toBeVisible();                               // Promise: await
+    console.log('url:', page.url());                                // string: no await
+    console.log('title:', await page.title());                      // Promise<string>: await
+});
+```
+
+### 166: Sequential vs Parallel
+
+![Sequential vs parallel: await a(); await b(); await c(); runs one after another and takes about 3000ms; await Promise.all([a(), b(), c()]) runs them together and takes about 1000ms](assets/images/ch21-seq-vs-parallel.png)
+
+**Concept:** Awaiting calls one after another runs them in sequence, so the times add up: three 1-second calls take about 3 seconds. Starting them together with `await Promise.all([...])` runs them in parallel, so the total is about as long as the slowest one.
+
+**Why:** Parallel calls can make test setup and health checks much faster, while sequential calls keep steps that depend on each other in the right order.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Sequential when a step needs the last one (log in, then open the dashboard). Parallel when the calls are independent (checking the auth, user and payment services).
+- **Q: What does it replace?** A: Awaiting unrelated calls one by one, which wastes time for no benefit.
+- **Q: What's the gotcha?** A: `await` inside `forEach` doesn't wait: `forEach` finishes at once, so code after the loop runs before the items are done. Use `for...of` to go one at a time, or `Promise.all(list.map(...))` for parallel. And `Promise.all` rejects as soon as one call fails (lesson 158).
+
+```mermaid
+flowchart LR
+    subgraph SEQ["Sequential: about 3000ms"]
+        A1["Login<br/>1s"] --> A2["Dashboard<br/>1s"] --> A3["Report<br/>1s"]
+    end
+    subgraph PAR["Parallel: about 1000ms"]
+        B1["Auth Service<br/>1s"]
+        B2["User Service<br/>1s"]
+        B3["Payment Service<br/>1s"]
+    end
+```
+
+| | Sequential | Parallel |
+|:--|:--|:--|
+| Code | `await a(); await b(); await c();` | `await Promise.all([a(), b(), c()]);` |
+| Three 1-second calls take | About 3000 ms | About 1000 ms |
+| Use when | Steps depend on each other | Calls are independent |
+
+```js
+// 21_Async_Await/166_SEQ.executin.js and 167_Parallel_Ex.js (combined)
+function apiCall(name) {
+    return new Promise(function (resolve) {
+        setTimeout(function () { resolve(name + ": 200 OK"); }, 1000);
+    });
+}
+
+async function sequentialTest() {
+    let start = Date.now();
+    let r1 = await apiCall("Login");
+    let r2 = await apiCall("Dashboard");
+    let r3 = await apiCall("Report");
+    console.log(r1, r2, r3);
+    console.log("Sequential time: ~" + (Date.now() - start) + "ms");   // about 3000ms
+}
+
+async function parallelTest() {
+    let start = Date.now();
+    let [r1, r2, r3] = await Promise.all([
+        apiCall("Auth Service"),
+        apiCall("User Service"),
+        apiCall("Payment Service")
+    ]);
+    console.log(r1, r2, r3);
+    console.log("Parallel time: ~" + (Date.now() - start) + "ms");     // about 1000ms
+}
+
+sequentialTest().then(parallelTest);
+```
+
+### 168: Retry Pattern
+
+**Concept:** A retry wraps a flaky call in a loop: `await` it inside `try/catch`, return on the first success, and give up after a set number of attempts.
+
+**Why:** Test environments flake, and a retry separates a call that fails now and then from one that is really broken.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Waiting for an API that becomes ready eventually, or calling an unstable test environment. In Playwright, reach for the built-ins first: `expect(...).toPass()` and the `retries` config option.
+- **Q: What does it replace?** A: Calling the API again by hand, or a fixed sleep that hopes the system is ready.
+- **Q: What's the gotcha?** A: Retries can hide real bugs, so log every failed attempt. Also, `168_API_Flaky_Finder.js` describes retries in its comment but has no loop yet: `await createFlakyAPIs(1)` waits on a plain function, which returns straight away, and `s()` isn't awaited, so it logs `Promise { 'Attempt 1: success!' }`.
+
+```mermaid
+flowchart TD
+    S["attempt 1"] --> C["await apiCall()"]
+    C -->|"success"| R["return the result"]
+    C -->|"rejected"| L{"attempts left?"}
+    L -->|"yes"| C
+    L -->|"no"| T["throw: Failed after 3 attempts"]
+```
+
+```js
+// 21_Async_Await/168_API_Flaky_Finder.js (its createFlakyAPIs, plus the retry loop its comment describes)
+function createFlakyAPIs(successAttempt) {
+    let attempt = 0;
+    return function () {
+        attempt++;
+        if (attempt < successAttempt) {
+            return Promise.reject("Attempt " + attempt + ": failed");
+        }
+        return Promise.resolve("Attempt " + attempt + ": success!");
+    };
+}
+
+async function retry(apiCall, maxAttempts) {
+    for (let i = 1; i <= maxAttempts; i++) {
+        try {
+            let result = await apiCall();
+            console.log(result);
+            return result;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    throw new Error("Failed after " + maxAttempts + " attempts");
+}
+
+async function retryTesting() {
+    await retry(createFlakyAPIs(3), 3);   // succeeds after two failures
+    await retry(createFlakyAPIs(5), 3).catch(e => console.log(e.message));   // runs out of retries
+}
+retryTesting();
+```
+
+### 169: Async Interview Questions
+
+![async runs until the first await: the code prints A, then B because test() starts straight away, then D because await paused test(), and C last when test() resumes; await pauses the function, not the program](assets/images/ch21-await-order.png)
+
+**Concept:** "What does this print?" drills from `169_IQ.js`, `170_IQ.js` and `171_IQ.js`. The key rule: an `async` function runs like normal code until its first `await`, then pauses while the code after the call carries on.
+
+**Why:** `171_IQ.js` is a classic interview question, and working it out shows you understand how `await` really behaves.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Interview prep, and whenever logs come out in an order you didn't expect.
+- **Q: What does it replace?** A: Guessing. Everything before the first `await` runs immediately; everything after it runs once the current code has finished.
+- **Q: What's the gotcha?** A: `await` pauses only its own function, not the whole program. That is why `D` prints before `C` in `171_IQ.js`.
+
+```mermaid
+sequenceDiagram
+    participant Main as Main code
+    participant T as test()
+    Main->>Main: prints A
+    Main->>T: test()
+    T->>T: prints B
+    T-->>Main: hits await, hands back a promise
+    Main->>Main: prints D
+    Main-->>T: current code finished
+    T->>T: prints C
+```
+
+| Drill | Prints |
+|:------|:-------|
+| `169_IQ.js`: `sayHello().then(...)` | `Hello, QA!` |
+| `169_IQ.js`: `getStatus()` | `Status code: 200` |
+| `169_IQ.js`: `testFlow()` | `Opened browser`, `Clicked login`, `Verified dashboard` |
+| `170_IQ.js`: `riskyTest()` | `Test failed: Element not found` |
+| `170_IQ.js`: `apiTest()` | `Status: 201`, `Body: Created`, `Test complete` |
+| `171_IQ.js` | `A`, `B`, `D`, `C` |
+
+```js
+// 21_Async_Await/171_IQ.js
+console.log("A");
+async function test() {
+    console.log("B");
+    await Promise.resolve();
+    console.log("C");
+}
+test();
+console.log("D");
+// A, B, D, C
+
+// 21_Async_Await/170_IQ.js (first example switched on)
+async function riskyTest() {
+    try {
+        let data = await Promise.reject("Element not found");
+        console.log(data);                  // skipped
+    } catch (err) {
+        console.log("Test failed:", err);   // Test failed: Element not found
+    }
+}
+riskyTest();
 ```
 
 ---
@@ -4773,6 +5042,7 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 | Note | What it explains |
 |:-----|:-----------------|
 | [chatAt_vs_At_string.md](00_learning/chatAt_vs_At_string.md) | `charAt(i)` vs `at(i)` on strings: negative indexes, out-of-range results, with comparison tables |
+| [playwright_page_methods_await.md](00_learning/playwright_page_methods_await.md) | Every method and property on Playwright's `page` (118 members, v1.65.0): what it returns and whether it needs `await` |
 | [rarely_needed_string_methods.md](00_learning/rarely_needed_string_methods.md) | `isWellFormed`, `toWellFormed`, `normalize`, `valueOf`, and the legacy HTML wrappers you should never use |
 | [object_reference_copy_eli5.html](00_learning/object_reference_copy_eli5.html) | Why `let b = a` changes `a`, explained like you are 5 with step-by-step diagrams. GitHub shows HTML as source, so download it or open it locally in a browser. |
 
@@ -4780,5 +5050,5 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 
 ## Coming Up
 
-- **Chapter 21: Async and Await** continues: `162_Async_Await.js` has only notes so far.
+- **Chapter 21: Async and Await** continues.
 - Then TypeScript, then Playwright.
