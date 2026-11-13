@@ -150,6 +150,11 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [175: Class and Objects](#175-class-and-objects)
 - [Chapter 24: Playwright](#chapter-24-playwright)
   - [Your First Playwright Project](#your-first-playwright-project)
+- [Chapter 25: Constructors, Fields and Static Members](#chapter-25-constructors-fields-and-static-members)
+  - [176: Public and Private Fields](#176-public-and-private-fields)
+  - [177: The Constructor](#177-the-constructor)
+  - [180: Classes for Test Code](#180-classes-for-test-code)
+  - [184: Static Members](#184-static-members)
 - [Learning Notes](#learning-notes)
 - [Coming Up](#coming-up)
 
@@ -181,9 +186,10 @@ flowchart LR
     C19 --> C20["20 Promises<br/>then, catch, all, race"]:::done
     C20 --> C21["21 Async and Await<br/>try/catch, parallel, retry"]:::done
     C21 --> C22["22 Export and Import<br/>default vs named"]:::done
-    C22 --> C23["23 Classes and Objects<br/>class, new, #private"]:::progress
+    C22 --> C23["23 Classes and Objects<br/>class, new, #private"]:::done
     C23 --> C24["24 Playwright<br/>first project"]:::progress
-    C24 --> TS["TypeScript"]:::planned
+    C24 --> C25["25 Constructors and Static<br/>constructor, #private, static"]:::progress
+    C25 --> TS["TypeScript"]:::planned
 
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
     classDef progress fill:#fef3c7,stroke:#d97706,color:#78350f
@@ -219,8 +225,9 @@ flowchart LR
 | 20 | Promises | [20_Promise](20_Promise/) | ✅ Done | `then`, `catch`, `finally`, chaining, `Promise.all`, `allSettled`, `race`, interview drills |
 | 21 | Async and Await | [21_Async_Await](21_Async_Await/) | ✅ Done | `async` functions, `await`, `try/catch/finally`, `await` in Playwright tests, sequential vs parallel, retries, interview drills |
 | 22 | Export and Import | [22_Export_Import](22_Export_Import/) | ✅ Done | Named exports, `import { }`, renaming with `as`, default vs named exports |
-| 23 | Classes and Objects | [23_Class_Objects](23_Class_Objects/) | 🟡 In progress | `class`, `new`, private `#` fields, methods |
+| 23 | Classes and Objects | [23_Class_Objects](23_Class_Objects/) | ✅ Done | `class`, `new`, private `#` fields, methods |
 | 24 | Playwright | [24_Playwright](24_Playwright/) | 🟡 In progress | A real Playwright project: config, first tests, running them in three browsers |
+| 25 | Constructors, Fields and Static Members | [25_Class_Object_Constructor](25_Class_Object_Constructor/) | 🟡 In progress | `constructor`, public and private `#` fields, classes for test code, `static` fields and methods |
 
 ---
 
@@ -449,12 +456,25 @@ LearnJSTSPlaywright4x/
 │   ├── logs/logger.js                      # export default log, plus named logBetter, logBetter2
 │   └── 174_Logs.js                         # Importing a default and named exports
 ├── 23_Class_Objects/
-│   └── 175_Class.js                        # class Person: private # fields, methods, new
-└── 24_Playwright/                          # Its own Playwright project (run commands inside it)
-    ├── package.json                        # @playwright/test
-    ├── playwright.config.ts                # testDir, retries, reporter, 3 browser projects
-    ├── tests/example.spec.ts               # Two tests against playwright.dev
-    └── .gitignore                          # node_modules, test-results, playwright-report
+│   └── 175_Class.js                        # class Person: private # fields, a constructor, methods, new
+├── 24_Playwright/                          # Its own Playwright project (run commands inside it)
+│   ├── package.json                        # @playwright/test
+│   ├── playwright.config.ts                # testDir, retries, reporter, 3 browser projects
+│   ├── tests/example.spec.ts               # Two tests against playwright.dev
+│   └── .gitignore                          # node_modules, test-results, playwright-report
+└── 25_Class_Object_Constructor/
+    ├── 176_Con.js                          # Constructor sets a public field and a private #apiKey
+    ├── 177_IQ.js                           # A constructor with a parameter: each Car gets its name
+    ├── 178_IQ.js                           # (commented out) two constructors: SyntaxError
+    ├── 179.js                              # The constructor runs once per new object
+    ├── 180_REAL_PW.js                      # class TestCase: name, status, priority, display()
+    ├── 181_Private_Public.js               # class Browser: public fields and methods
+    ├── 182_api.js                          # class APIClient: one class, staging and prod objects
+    ├── 183_Static.js                       # (empty)
+    ├── 184_Static.js                       # static counters shared by every TestRunner
+    ├── 185_IQ.js                           # static method summary() vs an instance method
+    ├── 186_REAL.js                         # static collegeName on class Student
+    └── 187.js                              # A class field (b;) set in the constructor
 ```
 
 ---
@@ -5308,6 +5328,216 @@ npx playwright show-report                                # opens the last HTML 
 
 ---
 
+## Chapter 25: Constructors, Fields and Static Members
+
+### 176: Public and Private Fields
+
+**Concept:** A field is data stored on each object. A public field (`this.user`) can be read and changed from outside; a private field (`#apiKey`) can only be used by code inside the class, for example through a method like `getAPI()`.
+
+**Why:** Test helpers often hold secrets and internal state (API keys, tokens, session ids) that the rest of the test code shouldn't read or overwrite by accident.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Make a field private when outside code shouldn't touch it, and expose only what is needed through a method. Keep plain data (a name, a URL) public.
+- **Q: What does it replace?** A: Java's `private` and `public` keywords. In JavaScript, a `#` at the start of the name is what makes a field private.
+- **Q: What's the gotcha?** A: `cred.#apiKey` outside the class is a `SyntaxError` (that's why line 15 of `176_Con.js` is commented out), not just `undefined`. Private fields also have to be declared at the top of the class (`#apiKey;`). Despite its name, `181_Private_Public.js` has only public fields, and its `closeBrowser()` prints "starting the browser", a copy-paste slip.
+
+```mermaid
+flowchart LR
+    O["cred object"] --> PUB["user: 'admin'<br/>public: cred.user works"]
+    O --> PRI["#apiKey<br/>private: only code inside the class"]
+    PRI --> M["getAPI() returns it"]
+```
+
+```js
+// 25_Class_Object_Constructor/176_Con.js (plus a getAPI() call)
+class Credentials {
+    #apiKey;                      // private: declared up front
+
+    constructor(user, key) {
+        this.user = user;         // public field
+        this.#apiKey = key;       // private field
+    }
+    getAPI() {
+        return this.#apiKey;      // code inside the class can read it
+    }
+}
+
+let cred = new Credentials("admin", "#scret_key_1234");
+console.log(cred.user);           // admin
+console.log(cred.getAPI());       // #scret_key_1234
+// console.log(cred.#apiKey);     SyntaxError: private field outside its class
+
+// 25_Class_Object_Constructor/187.js: a public class field, set in the constructor
+let a = 10;
+class Car {
+    b;
+    constructor() {
+        console.log(a);           // 10: the constructor can read outer variables
+        this.b = 10;
+    }
+}
+new Car();
+```
+
+### 177: The Constructor
+
+![The constructor runs once, at birth: new TestCase("Login Test", "PASS", "P0") calls constructor(name, status, priority), which sets this.name, this.status and this.priority, giving a ready-made object loginTest_ref; one constructor per class](assets/images/ch25-constructor.png)
+
+**Concept:** The constructor is a special method that runs automatically, once, every time `new` creates an object. Its parameters receive the values passed to `new`, and it usually stores them on `this`.
+
+**Why:** It makes every object start in a complete, valid state, instead of being built empty and filled in line by line.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Whenever objects need starting data: a car's name (`177_IQ.js`), a test case's name, status and priority, or an API client's base URL.
+- **Q: What does it replace?** A: Creating an empty object and setting each property afterwards. Java constructors work the same way, but Java allows several (overloading).
+- **Q: What's the gotcha?** A: JavaScript allows only one constructor per class: two is `SyntaxError: A class may only have one constructor` (`178_IQ.js`). A class without one still works, since JavaScript adds an empty one. And `179.js` writes `obj_Ref = new Car()` without `let`, which works only outside strict mode; inside a module or `"use strict"` it is a `ReferenceError`.
+
+```mermaid
+sequenceDiagram
+    participant You as Your code
+    participant C as constructor
+    You->>C: new Car("i10")
+    C->>C: this.name = "i10"
+    C-->>You: a new Car object
+    You->>C: new Car("MG Hector")
+    C->>C: this.name = "MG Hector"
+    C-->>You: another, separate Car object
+```
+
+```js
+// 25_Class_Object_Constructor/177_IQ.js
+class Car {
+    constructor(assigned_name) {
+        this.name = assigned_name;     // runs once per new Car
+    }
+}
+
+let hyndai_i10 = new Car("i10");
+console.log(hyndai_i10.name);          // i10
+
+let mg_hector = new Car("MG Hector");
+console.log(mg_hector.name);           // MG Hector
+
+// 25_Class_Object_Constructor/179.js (Car renamed to Bike so this runs as one file)
+class Bike {
+    constructor() {
+        console.log("Hi,Object is created");
+    }
+}
+let obj_Ref = new Bike();              // Hi,Object is created
+
+// 178_IQ.js: two constructors are not allowed
+// class Bad { constructor(a) {} constructor(b) {} }   SyntaxError
+```
+
+### 180: Classes for Test Code
+
+**Concept:** The same class can create many objects that share methods but hold their own data: one `TestCase` class for every test case, one `APIClient` class for both staging and production.
+
+**Why:** It is the step from practice classes to real test code, and the Page Object Model in Playwright is exactly this pattern.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Any time the same shape repeats with different data: test cases, browsers, API clients per environment, page objects.
+- **Q: What does it replace?** A: Repeating near-identical objects or functions with hard-coded values, such as a separate `buildStagingUrl` and `buildProdUrl`.
+- **Q: What's the gotcha?** A: Name methods for what they do: `kartik(path)` in `182_api.js` builds a full URL, so a name like `buildUrl(path)` tells the reader that at a glance.
+
+```mermaid
+flowchart LR
+    C["class APIClient<br/>constructor(baseURL)"] -->|"new APIClient(staging URL)"| S["staging<br/>baseURL: https://staging.api.com"]
+    C -->|"new APIClient(prod URL)"| P["prod<br/>baseURL: https://prod.api.com"]
+    S --> SU["staging.kartik('/users')<br/>https://staging.api.com/users"]
+    P --> PU["prod.kartik('/prod/users')<br/>https://prod.api.com/prod/users"]
+```
+
+```js
+// 25_Class_Object_Constructor/180_REAL_PW.js
+class TestCase {
+    constructor(name_given, status_given, priority_given) {
+        this.name = name_given;
+        this.status = status_given;
+        this.priority = priority_given;
+    }
+    display() {
+        console.log(this.name + " → " + this.status + " → " + this.priority);
+    }
+}
+new TestCase("Login Test", "PASS", "P0").display();    // Login Test → PASS → P0
+new TestCase("Signup Test", "FAIL", "P1").display();   // Signup Test → FAIL → P1
+
+// 25_Class_Object_Constructor/182_api.js
+class APIClient {
+    constructor(baseURL) {
+        this.baseURL = baseURL;
+    }
+    kartik(path) {
+        return this.baseURL + path;
+    }
+}
+let staging = new APIClient("https://staging.api.com");
+let prod = new APIClient("https://prod.api.com");
+console.log(staging.kartik("/users"));       // https://staging.api.com/users
+console.log(prod.kartik("/prod/users"));     // https://prod.api.com/prod/users
+```
+
+### 184: Static Members
+
+![static vs instance: static totalTests and passCount belong to class TestRunner and are shared; each object t1, t2, t3 has its own name; read TestRunner.totalTests on the class and t1.name on the object](assets/images/ch25-static.png)
+
+**Concept:** A `static` field or method belongs to the class itself, not to any one object: there is a single `TestRunner.totalTests` shared by every test. Normal (instance) fields like `this.name` give each object its own copy.
+
+**Why:** Counters, totals and shared settings, such as how many tests ran and how many passed, belong to the whole group rather than to one test.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Shared counters (`184_Static.js`), summaries computed over all objects (`static summary()` in `185_IQ.js`), and constants every object shares (`static collegeName` in `186_REAL.js`).
+- **Q: What does it replace?** A: A global variable that every object updates. Java's `static` works the same way.
+- **Q: What's the gotcha?** A: Call static members on the class and instance members on an object: `TestRunner.pramod_fn()` and `t1.summary()` both throw `TypeError: ... is not a function`. Inside a static method `this` is the class itself, so `this.name` in `186_REAL.js`'s `static display()` is `"Student"` (the class name) and `this.score` is `undefined`; it prints `Student are part of the  PW AT Batchundefined`.
+
+```mermaid
+flowchart TD
+    C["class TestRunner<br/>static totalTests, static passCount<br/>one copy, shared"] --> T1["t1<br/>name: loginTest"]
+    C --> T2["t2<br/>name: signTest"]
+    C --> T3["t3<br/>name: dashboardTest"]
+    T1 -.->|"each new TestRunner<br/>adds 1 to totalTests"| C
+```
+
+| | `static` | Instance (normal) |
+|:--|:--|:--|
+| Belongs to | The class | Each object |
+| How many copies | One, shared | One per object |
+| Access it with | `TestRunner.totalTests` | `t1.name` |
+| `this` inside a method | The class | The object |
+
+```js
+// 25_Class_Object_Constructor/185_IQ.js (four tests, as in its commented lines)
+class TestRunner {
+    static totalTests = 0;
+    static passCount = 0;
+    constructor(name, passed) {
+        this.name = name;                     // instance: one per object
+        TestRunner.totalTests++;              // static: one shared counter
+        if (passed) {
+            TestRunner.passCount++;
+        }
+    }
+    pramod_fn() {                             // instance method: call it on an object
+        return this.name;
+    }
+    static summary() {                        // static method: call it on the class
+        return TestRunner.passCount + "/" + TestRunner.totalTests + " passed";
+    }
+}
+
+let t1 = new TestRunner("Login", true);
+new TestRunner("Signup", false);
+new TestRunner("Cart", true);
+new TestRunner("Checkout", true);
+console.log(t1.pramod_fn());                  // Login
+console.log(TestRunner.summary());            // 3/4 passed
+// TestRunner.pramod_fn();                    TypeError: TestRunner.pramod_fn is not a function
+```
+
+---
+
 ## Learning Notes
 
 Short explainers kept in [00_learning/](00_learning/), written while working through the lessons.
@@ -5324,5 +5554,5 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 
 ## Coming Up
 
-- **Chapter 23: Classes and Objects** and **Chapter 24: Playwright** continue.
+- **Chapter 24: Playwright** and **Chapter 25: Constructors, Fields and Static Members** continue.
 - Then TypeScript.
