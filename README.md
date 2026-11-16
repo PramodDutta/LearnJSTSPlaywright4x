@@ -155,6 +155,15 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [177: The Constructor](#177-the-constructor)
   - [180: Classes for Test Code](#180-classes-for-test-code)
   - [184: Static Members](#184-static-members)
+- [Chapter 26: Encapsulation](#chapter-26-encapsulation)
+  - [188: Getters and Setters](#188-getters-and-setters)
+  - [190: Guarded Setters](#190-guarded-setters)
+  - [191: Private Instance and Static Fields](#191-private-instance-and-static-fields)
+  - [192: Practice Classes and Default Parameters](#192-practice-classes-and-default-parameters)
+- [Chapter 27: Inheritance](#chapter-27-inheritance)
+  - [195: extends](#195-extends)
+  - [197: super() and super.method()](#197-super-and-supermethod)
+  - [198: Overriding Methods](#198-overriding-methods)
 - [Learning Notes](#learning-notes)
 - [Coming Up](#coming-up)
 
@@ -188,8 +197,10 @@ flowchart LR
     C21 --> C22["22 Export and Import<br/>default vs named"]:::done
     C22 --> C23["23 Classes and Objects<br/>class, new, #private"]:::done
     C23 --> C24["24 Playwright<br/>first project"]:::progress
-    C24 --> C25["25 Constructors and Static<br/>constructor, #private, static"]:::progress
-    C25 --> TS["TypeScript"]:::planned
+    C24 --> C25["25 Constructors and Static<br/>constructor, #private, static"]:::done
+    C25 --> C26["26 Encapsulation<br/>getters, setters, #private"]:::done
+    C26 --> C27["27 Inheritance<br/>extends, super, overriding"]:::progress
+    C27 --> TS["TypeScript"]:::planned
 
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
     classDef progress fill:#fef3c7,stroke:#d97706,color:#78350f
@@ -227,7 +238,9 @@ flowchart LR
 | 22 | Export and Import | [22_Export_Import](22_Export_Import/) | ✅ Done | Named exports, `import { }`, renaming with `as`, default vs named exports |
 | 23 | Classes and Objects | [23_Class_Objects](23_Class_Objects/) | ✅ Done | `class`, `new`, private `#` fields, methods |
 | 24 | Playwright | [24_Playwright](24_Playwright/) | 🟡 In progress | A real Playwright project: config, first tests, running them in three browsers |
-| 25 | Constructors, Fields and Static Members | [25_Class_Object_Constructor](25_Class_Object_Constructor/) | 🟡 In progress | `constructor`, public and private `#` fields, classes for test code, `static` fields and methods |
+| 25 | Constructors, Fields and Static Members | [25_Class_Object_Constructor](25_Class_Object_Constructor/) | ✅ Done | `constructor`, public and private `#` fields, classes for test code, `static` fields and methods |
+| 26 | Encapsulation | [26_OOPs_Encapsulation](26_OOPs_Encapsulation/) | ✅ Done | Private fields with getters and setters, guarded setters, private static fields, default parameters |
+| 27 | Inheritance | [27_OOPs_Inheritance](27_OOPs_Inheritance/) | 🟡 In progress | `extends`, `super()`, `super.method()`, overriding, one call that behaves differently per class |
 
 ---
 
@@ -462,19 +475,37 @@ LearnJSTSPlaywright4x/
 │   ├── playwright.config.ts                # testDir, retries, reporter, 3 browser projects
 │   ├── tests/example.spec.ts               # Two tests against playwright.dev
 │   └── .gitignore                          # node_modules, test-results, playwright-report
-└── 25_Class_Object_Constructor/
-    ├── 176_Con.js                          # Constructor sets a public field and a private #apiKey
-    ├── 177_IQ.js                           # A constructor with a parameter: each Car gets its name
-    ├── 178_IQ.js                           # (commented out) two constructors: SyntaxError
-    ├── 179.js                              # The constructor runs once per new object
-    ├── 180_REAL_PW.js                      # class TestCase: name, status, priority, display()
-    ├── 181_Private_Public.js               # class Browser: public fields and methods
-    ├── 182_api.js                          # class APIClient: one class, staging and prod objects
-    ├── 183_Static.js                       # (empty)
-    ├── 184_Static.js                       # static counters shared by every TestRunner
-    ├── 185_IQ.js                           # static method summary() vs an instance method
-    ├── 186_REAL.js                         # static collegeName on class Student
-    └── 187.js                              # A class field (b;) set in the constructor
+├── 25_Class_Object_Constructor/
+│   ├── 176_Con.js                          # Constructor sets a public field and a private #apiKey
+│   ├── 177_IQ.js                           # A constructor with a parameter: each Car gets its name
+│   ├── 178_IQ.js                           # (commented out) two constructors: SyntaxError
+│   ├── 179.js                              # The constructor runs once per new object
+│   ├── 180_REAL_PW.js                      # class TestCase: name, status, priority, display()
+│   ├── 181_Private_Public.js               # class Browser: public fields and methods
+│   ├── 182_api.js                          # class APIClient: one class, staging and prod objects
+│   ├── 183_Static.js                       # (empty)
+│   ├── 184_Static.js                       # static counters shared by every TestRunner
+│   ├── 185_IQ.js                           # static method summary() vs an instance method
+│   ├── 186_REAL.js                         # static collegeName on class Student
+│   └── 187.js                              # A class field (b;) set in the constructor
+├── 26_OOPs_Encapsulation/
+│   ├── 188_Encapsulation.js                # Private #child1 with getChild / setChild
+│   ├── 189.js                              # Private #engine with a getter and a setter
+│   ├── 190_Bank.ecap.js                    # A setter that only lets the cashier change #balance
+│   ├── 191_IQ.Encap.js                     # Private #status plus a private static #count
+│   ├── 192_IQ.js                           # class Bug: title, severity, display()
+│   ├── 193.iQ.js                           # Default constructor parameters: staging:3000
+│   └── 194.IQ.js                           # class User: greet()
+└── 27_OOPs_Inheritance/
+    └── 01_Single_Inheritance/
+        ├── 195_SI.js                       # Son extends Father: inherits eat()
+        ├── 196_SI_REAL.js                  # LoginPage extends BasePage
+        ├── 197_REAL.js                     # super(name) and super.foo() in a Dog
+        ├── 198_SI.js                       # A child overrides setup()
+        ├── 199.js                          # super.setup() and super.teardown() around child steps
+        ├── 200_IQ.js                       # One execute() call, three test types
+        ├── 201_IQ.js                       # One verify() call, three page classes
+        └── 202_IQ.js                       # One generate() call: HTML, JSON and text reports
 ```
 
 ---
@@ -5538,6 +5569,348 @@ console.log(TestRunner.summary());            // 3/4 passed
 
 ---
 
+## Chapter 26: Encapsulation
+
+### 188: Getters and Setters
+
+![Encapsulation: class ICICI keeps #balance locked inside; pramod.getBalance() and pramod.setBalance(300000, true) go through the methods, while pramod.#balance is a SyntaxError; the class decides who may change the data](assets/images/ch26-encapsulation.png)
+
+**Concept:** Encapsulation means keeping an object's data private (`#child1`, `#engine`) and letting the outside world reach it only through methods: a getter to read it (`getChild()`) and a setter to change it (`setChild()`).
+
+**Why:** When every change goes through one method, the class controls its own data, so a bad value or a careless line elsewhere can't quietly break it.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: For data that has rules or must not leak: balances, tokens, a test's status. Plain data with no rules (like `name`) can stay public.
+- **Q: What does it replace?** A: Public fields that any line of code can overwrite. Java's `private` fields with `getX()` and `setX()` methods work the same way.
+- **Q: What's the gotcha?** A: Only `#` fields are protected: `p.name = "Amit"` at the end of `188_Encapsulation.js` overwrites the public `name` with no complaint. And a setter with no checks, like `setChild()`, hides the field but doesn't protect it; lesson 190 adds the check.
+
+```mermaid
+flowchart LR
+    OUT["code outside the class"] -->|"getChild()"| G["getter reads #child1"]
+    OUT -->|"setChild(changed_name)"| S["setter changes #child1"]
+    OUT -.->|"p.#child1"| X["SyntaxError"]
+```
+
+```js
+// 26_OOPs_Encapsulation/188_Encapsulation.js
+class Person {
+    // hide my variable
+    #child1;
+    #child2;
+    constructor(name, child1, child2) {
+        this.name = name;
+        this.#child1 = child1;
+        this.#child2 = child2;
+    }
+
+    getChild() {                   // getter: read the private field
+        return this.#child1;
+    }
+    setChild(changed_name) {       // setter: change the private field
+        this.#child1 = changed_name;
+    }
+}
+
+let p = new Person("Pramod", "Vrad", "Jenny");
+// console.log(p.#child1);        SyntaxError: private field
+console.log(p.getChild());        // Vrad
+p.setChild("VIRAD");
+console.log(p.getChild());        // VIRAD
+console.log(p.name);              // Pramod (public, so anyone can change it)
+```
+
+### 190: Guarded Setters
+
+**Concept:** A guarded setter checks a rule before changing private data. In `190_Bank.ecap.js`, `setBalance()` changes `#balance` only when `isCashier` is `true`; otherwise it prints "Not allowed".
+
+**Why:** This is the real payoff of encapsulation: the rule lives in one place, and no other code can skip it.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Whenever a value has rules: no negative balances, only certain roles may change data, statuses that can only move forward.
+- **Q: What does it replace?** A: Copying the same `if` check everywhere the value changes, and hoping nobody forgets one.
+- **Q: What's the gotcha?** A: The check is only as strong as its input: passing `true` for `isCashier` is enough to change the balance. Real code checks who the caller really is, but the shape (one guarded method, no other way in) is the same.
+
+```mermaid
+flowchart TD
+    C["setBalance(amount, isCashier)"] --> Q{"isCashier?"}
+    Q -->|true| OK["#balance = amount"]
+    Q -->|false| NO["prints Not allowed<br/>#balance unchanged"]
+```
+
+```js
+// 26_OOPs_Encapsulation/190_Bank.ecap.js
+class ICICI {
+    #balance;
+    constructor(name, balance) {
+        this.#balance = balance;
+        this.name = name;
+    }
+    getBalance() {
+        return this.#balance;
+    }
+    setBalance(balance, isCashier) {
+        if (isCashier) {
+            this.#balance = balance;
+        } else {
+            console.log("Not allowed");
+        }
+    }
+}
+let pramod = new ICICI("Pramod", 1000);
+pramod.setBalance(10000000, false);        // Not allowed
+console.log(pramod.getBalance());          // 1000 (unchanged)
+
+let pramod_father = new ICICI("Pramod", 2000);
+pramod_father.setBalance(300000, true);
+console.log(pramod_father.getBalance());   // 300000
+```
+
+### 191: Private Instance and Static Fields
+
+**Concept:** `#` works on static fields too. In `191_IQ.Encap.js`, each test has its own private `#status`, and the class keeps one private `static #count` of how many tests were created, readable only through `static getCount()`.
+
+**Why:** A shared counter is exactly the kind of value outside code shouldn't edit by hand.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Class-level state that only the class should change: counters, caches, registries.
+- **Q: What does it replace?** A: A public `static count`, which anyone can reset with `TestCase.count = 0`.
+- **Q: What's the gotcha?** A: `static setCount(v)` in the file lets any code overwrite the count anyway, which undoes the protection. Only add a setter when outside code really needs one.
+
+```mermaid
+flowchart TD
+    CL["class TestCase<br/>static #count (one, private)"] --> T1["login test<br/>#status: PASSED"]
+    CL --> T2["three more tests<br/>#status: not run"]
+    CL -->|"static getCount()"| R["4"]
+```
+
+```js
+// 26_OOPs_Encapsulation/191_IQ.Encap.js
+class TestCase {
+    #status = "not run";              // private, one per object
+    static #count = 0;                // private, one per class
+    constructor(name) {
+        this.name = name;
+        TestCase.#count++;
+    }
+    run(pass) {
+        this.#status = pass ? "PASSED" : "FAILED";
+    }
+    getStatus() { return this.#status; }
+    static getCount() { return TestCase.#count; }
+}
+const tc = new TestCase("login");
+tc.run(true);
+console.log(tc.getStatus());          // PASSED
+new TestCase("login");
+new TestCase("login");
+new TestCase("login");
+console.log(TestCase.getCount());     // 4
+```
+
+### 192: Practice Classes and Default Parameters
+
+**Concept:** Three small practice classes (`Bug`, `Environment`, `User`) that each pair data with a method that uses it. `193.iQ.js` adds default parameters: `constructor(name = "staging", port = 3000)` fills in values the caller leaves out.
+
+**Why:** Default parameters give every object a sensible starting state, such as a test environment that points at staging unless told otherwise.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When most objects share the same setting and only a few need to change it: environments, timeouts, browsers.
+- **Q: What does it replace?** A: Writing `if (port === undefined) port = 3000;` inside the constructor.
+- **Q: What's the gotcha?** A: Defaults only apply when the argument is missing or `undefined`. Passing `null` or `0` keeps that value, so `new Environment("qa", 0)` gives port `0`.
+
+```mermaid
+flowchart LR
+    A["new Environment()"] --> D["name = 'staging', port = 3000<br/>(defaults used)"]
+    B["new Environment('production', 8080)"] --> G["name = 'production', port = 8080<br/>(your values)"]
+```
+
+```js
+// 26_OOPs_Encapsulation/193.iQ.js
+class Environment {
+    constructor(name = "staging", port = 3000) {
+        this.name = name;
+        this.port = port;
+    }
+    getURL() {
+        return "http://" + this.name + ":" + this.port;
+    }
+}
+console.log(new Environment().getURL());                    // http://staging:3000
+console.log(new Environment("production", 8080).getURL());  // http://production:8080
+
+// 26_OOPs_Encapsulation/192_IQ.js
+class Bug {
+    constructor(title, severity) {
+        this.title = title;
+        this.severity = severity;
+    }
+    display() {
+        console.log("[" + this.severity + "] " + this.title);
+    }
+}
+new Bug("Login crash", "Critical").display();   // [Critical] Login crash
+new Bug("Typo in footer", "Low").display();     // [Low] Typo in footer
+```
+
+`194.IQ.js` is the same pattern with `class User` and `greet()`: `Hi, I am Alice`, then `Hi, I am Bob`.
+
+---
+
+## Chapter 27: Inheritance
+
+### 195: extends
+
+**Concept:** `class Son extends Father` makes `Son` a child class: every `Son` object gets `Father`'s methods (`eat()`) as well as its own (`walk()`). It's called single inheritance because a class extends exactly one parent.
+
+**Why:** Shared behaviour is written once in the parent, which is the idea behind a `BasePage` that every page object in a Playwright suite extends (`196_SI_REAL.js`).
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When several classes share the same methods: every page needs `open()` and `close()`, so they live in `BasePage` and `LoginPage extends BasePage`.
+- **Q: What does it replace?** A: Copy-pasting the same methods into every class. Java's `extends` is the same idea.
+- **Q: What's the gotcha?** A: Inheritance only flows down: a `Father` object has no `walk()`, so `f.walk()` is a `TypeError`. A class can extend only one parent (`extends A, B` is a `SyntaxError`). And `new LoginPage()` without an argument leaves `pageName` as `undefined`.
+
+```mermaid
+flowchart TD
+    F["class Father<br/>eat()"] --> S["class Son extends Father<br/>walk(), plus eat() inherited"]
+    S --> SO["s.walk() and s.eat() both work"]
+    F --> FO["f.eat() works<br/>f.walk() is a TypeError"]
+```
+
+```js
+// 27_OOPs_Inheritance/01_Single_Inheritance/195_SI.js
+class Father {
+    eat() {
+        console.log("Hi eating");
+    }
+}
+class Son extends Father {
+    walk() {
+        console.log("Hi walking");
+    }
+}
+
+const s = new Son();
+const f = new Father();
+s.walk();      // Hi walking
+s.eat();       // Hi eating (inherited from Father)
+f.eat();       // Hi eating
+// f.walk();   TypeError: inheritance does not flow upwards
+```
+
+### 197: super() and super.method()
+
+![Inheritance: extends and super. class UITest extends BaseTest; it inherits what it does not define, overrides what it redefines, and uses super to call the parent: super() in the constructor, super.setup() and super.teardown() in its methods; call super() before using this](assets/images/ch27-inheritance.png)
+
+**Concept:** `super(...)` inside a child constructor runs the parent's constructor, and `super.method()` calls the parent's version of a method. In `199.js`, `UITest`'s `setup()` calls `super.setup()` first, then adds its own step.
+
+**Why:** A child usually wants to extend the parent's behaviour, not throw it away: open the browser like every test does, then maximize the window.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: In a child constructor that needs the parent's setup (`super(name)` in `197_REAL.js`), and in overridden methods that should still run the parent's steps.
+- **Q: What does it replace?** A: Copying the parent's code into the child, which then drifts out of sync.
+- **Q: What's the gotcha?** A: In a child class with a constructor, call `super()` before touching `this`; otherwise it's `ReferenceError: Must call super constructor in derived class before accessing 'this'`. Private `#` fields stay with the parent: the child can't read `this.#secret`, only use a parent method that returns it.
+
+```mermaid
+sequenceDiagram
+    participant UI as UITest
+    participant Base as BaseTest
+    UI->>Base: super() in the constructor
+    Base-->>UI: Parent!
+    UI->>Base: super.setup()
+    Base-->>UI: Base: open browser
+    UI->>UI: UI: maximize window
+    UI->>UI: UI: take screenshot
+    UI->>Base: super.teardown()
+    Base-->>UI: Base: close browser
+```
+
+```js
+// 27_OOPs_Inheritance/01_Single_Inheritance/199.js (plus the calls, so it prints)
+class BaseTest {
+    constructor() {
+        console.log("Parent!");
+    }
+    setup() {
+        console.log("Base: open browser");
+    }
+    teardown() {
+        console.log("Base: close browser");
+    }
+}
+class UITest extends BaseTest {
+    constructor() {
+        super();                      // runs BaseTest's constructor
+    }
+    setup() {
+        super.setup();                // parent's step first
+        console.log("UI: maximize window");
+    }
+    teardown() {
+        console.log("UI: take screenshot");
+        super.teardown();             // parent's step last
+    }
+}
+const t = new UITest();               // Parent!
+t.setup();                            // Base: open browser, then UI: maximize window
+t.teardown();                         // UI: take screenshot, then Base: close browser
+```
+
+### 198: Overriding Methods
+
+**Concept:** When a child defines a method with the same name as the parent's, the child's version wins (`198_SI.js`). Lessons 200 to 202 show the payoff: a list of different objects, one method call, and each object runs its own version.
+
+**Why:** A test runner can call `execute()` or `verify()` on any test or page object without knowing which kind it is.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When different kinds of things share an action but do it differently: test types (`execute()`), page objects (`verify()`), report formats (`generate()`).
+- **Q: What does it replace?** A: A long `if/else` or `switch` on the object's type before every call.
+- **Q: What's the gotcha?** A: Overriding replaces the parent's method completely; to keep the parent's behaviour as well, call `super.method()` (lesson 197). The method name must match exactly, or you've just added a new method.
+
+```mermaid
+flowchart LR
+    L["tests.forEach(test => test.execute())"] --> U["UnitTest<br/>checking one function"]
+    L --> A["APITest<br/>sending HTTP request"]
+    L --> E["E2ETest<br/>opening browser"]
+```
+
+| File | Parent method | Child versions |
+|:-----|:--------------|:---------------|
+| `198_SI.js` | `BaseTest.setup()` | `APITest.setup()` |
+| `200_IQ.js` | `TestCase.execute()` | Unit, API and E2E test |
+| `201_IQ.js` | `BasePage.verify()` | Login, Dashboard and Cart page |
+| `202_IQ.js` | `Report.generate(data)` | HTML, JSON and text report |
+
+```js
+// 27_OOPs_Inheritance/01_Single_Inheritance/200_IQ.js (messages shortened)
+class TestCase {
+    execute() {
+        console.log("Running generic test");
+    }
+}
+class UnitTest extends TestCase {
+    execute() {
+        console.log("Running unit test: checking one function");
+    }
+}
+class APITest extends TestCase {
+    execute() {
+        console.log("Running API test: sending HTTP request");
+    }
+}
+class E2ETest extends TestCase {
+    execute() {
+        console.log("Running E2E test: opening browser");
+    }
+}
+
+let tests = [new UnitTest(), new APITest(), new E2ETest()];
+tests.forEach(function (test) {
+    test.execute();     // each object runs its own execute()
+});
+```
+
+---
+
 ## Learning Notes
 
 Short explainers kept in [00_learning/](00_learning/), written while working through the lessons.
@@ -5554,5 +5927,5 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 
 ## Coming Up
 
-- **Chapter 24: Playwright** and **Chapter 25: Constructors, Fields and Static Members** continue.
+- **Chapter 24: Playwright** and **Chapter 27: Inheritance** continue.
 - Then TypeScript.
