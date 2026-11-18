@@ -164,6 +164,19 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [195: extends](#195-extends)
   - [197: super() and super.method()](#197-super-and-supermethod)
   - [198: Overriding Methods](#198-overriding-methods)
+  - [203: Multilevel Inheritance](#203-multilevel-inheritance)
+  - [204: Multiple Inheritance and Mixins](#204-multiple-inheritance-and-mixins)
+  - [206: Hierarchical and Hybrid Inheritance](#206-hierarchical-and-hybrid-inheritance)
+- [Chapter 28: Polymorphism](#chapter-28-polymorphism)
+  - [207: Runtime vs Compile-Time Polymorphism](#207-runtime-vs-compile-time-polymorphism)
+- [Chapter 29: Interview Questions](#chapter-29-interview-questions)
+  - [211: Method Chaining](#211-method-chaining)
+- [Chapter 30: TypeScript Setup](#chapter-30-typescript-setup)
+  - [213: Compiling TypeScript](#213-compiling-typescript)
+- [Chapter 31: TypeScript Basics](#chapter-31-typescript-basics)
+  - [214: Basic Types](#214-basic-types)
+  - [216: Typing Functions and Objects](#216-typing-functions-and-objects)
+  - [218: void and never](#218-void-and-never)
 - [Learning Notes](#learning-notes)
 - [Coming Up](#coming-up)
 
@@ -199,8 +212,11 @@ flowchart LR
     C23 --> C24["24 Playwright<br/>first project"]:::progress
     C24 --> C25["25 Constructors and Static<br/>constructor, #private, static"]:::done
     C25 --> C26["26 Encapsulation<br/>getters, setters, #private"]:::done
-    C26 --> C27["27 Inheritance<br/>extends, super, overriding"]:::progress
-    C27 --> TS["TypeScript"]:::planned
+    C26 --> C27["27 Inheritance<br/>extends, super, mixins"]:::done
+    C27 --> C28["28 Polymorphism"]:::done
+    C28 --> C29["29 Interview Questions"]:::done
+    C29 --> C30["30 TypeScript Setup<br/>tsc, tsconfig"]:::done
+    C30 --> C31["31 TypeScript Basics<br/>types, functions, void, never"]:::progress
 
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
     classDef progress fill:#fef3c7,stroke:#d97706,color:#78350f
@@ -240,7 +256,11 @@ flowchart LR
 | 24 | Playwright | [24_Playwright](24_Playwright/) | 🟡 In progress | A real Playwright project: config, first tests, running them in three browsers |
 | 25 | Constructors, Fields and Static Members | [25_Class_Object_Constructor](25_Class_Object_Constructor/) | ✅ Done | `constructor`, public and private `#` fields, classes for test code, `static` fields and methods |
 | 26 | Encapsulation | [26_OOPs_Encapsulation](26_OOPs_Encapsulation/) | ✅ Done | Private fields with getters and setters, guarded setters, private static fields, default parameters |
-| 27 | Inheritance | [27_OOPs_Inheritance](27_OOPs_Inheritance/) | 🟡 In progress | `extends`, `super()`, `super.method()`, overriding, one call that behaves differently per class |
+| 27 | Inheritance | [27_OOPs_Inheritance](27_OOPs_Inheritance/) | ✅ Done | `extends`, `super()`, `super.method()`, overriding, one call that behaves differently per class, multilevel, mixins |
+| 28 | Polymorphism | [28_OOPs_Polymorphism](28_OOPs_Polymorphism/) | ✅ Done | Runtime polymorphism (overriding); why JavaScript has no method overloading |
+| 29 | Interview Questions | [29_IQ](29_IQ/) | ✅ Done | `super` chains, method chaining with `return this` |
+| 30 | TypeScript Setup | [30_Typescript](30_Typescript/) | ✅ Done | Compiling `.ts` to `.js` with `tsc`, `tsconfig.json`, running `.ts` with Node |
+| 31 | TypeScript Basics | [31_Typescript](31_Typescript/) | 🟡 In progress | Type annotations, basic types, `any` vs `unknown`, typed functions and objects, `void`, `never` |
 
 ---
 
@@ -251,10 +271,12 @@ LearnJSTSPlaywright4x/
 ├── README.md
 ├── .gitignore
 ├── package.json                            # One dependency: prompt-sync (chapter 08)
+├── tsconfig.json                           # TypeScript settings (tsc --init defaults, strict)
 ├── package-lock.json
 ├── assets/images/                          # Banner and chapter cheat-sheet images used in this README
 ├── 00_learning/                            # Short explainer notes (see Learning Notes below)
 │   ├── Default vs Named Exports.pdf        # The same explainer, saved from the browser (landscape)
+│   ├── any_vs_unknown_typescript.md        # any vs unknown in TypeScript, in tables
 │   ├── chatAt_vs_At_string.md              # charAt(i) vs at(i)
 │   ├── default_vs_named_export_eli5.pdf    # ELI5 picture explainer: default vs named exports
 │   ├── object_reference_copy_eli5.html     # ELI5 picture page: why let b = a changes a
@@ -496,16 +518,42 @@ LearnJSTSPlaywright4x/
 │   ├── 192_IQ.js                           # class Bug: title, severity, display()
 │   ├── 193.iQ.js                           # Default constructor parameters: staging:3000
 │   └── 194.IQ.js                           # class User: greet()
-└── 27_OOPs_Inheritance/
-    └── 01_Single_Inheritance/
-        ├── 195_SI.js                       # Son extends Father: inherits eat()
-        ├── 196_SI_REAL.js                  # LoginPage extends BasePage
-        ├── 197_REAL.js                     # super(name) and super.foo() in a Dog
-        ├── 198_SI.js                       # A child overrides setup()
-        ├── 199.js                          # super.setup() and super.teardown() around child steps
-        ├── 200_IQ.js                       # One execute() call, three test types
-        ├── 201_IQ.js                       # One verify() call, three page classes
-        └── 202_IQ.js                       # One generate() call: HTML, JSON and text reports
+├── 27_OOPs_Inheritance/
+│   ├── 01_Single_Inheritance/
+│   │   ├── 195_SI.js                       # Son extends Father: inherits eat()
+│   │   ├── 196_SI_REAL.js                  # LoginPage extends BasePage
+│   │   ├── 197_REAL.js                     # super(name) and super.foo() in a Dog
+│   │   ├── 198_SI.js                       # A child overrides setup()
+│   │   ├── 199.js                          # super.setup() and super.teardown() around child steps
+│   │   ├── 200_IQ.js                       # One execute() call, three test types
+│   │   ├── 201_IQ.js                       # One verify() call, three page classes
+│   │   └── 202_IQ.js                       # One generate() call: HTML, JSON and text reports
+│   ├── 02_MultiLevel_Inheritance/
+│   │   └── 203_MI.js                       # BasePage -> AuthPage -> AdminPage
+│   ├── 03_Multiple_Inheritance/
+│   │   ├── 204_Multipe.js                  # extends F1, F2 is not allowed (commented out)
+│   │   └── 205_Mixin_MI.js                 # Mixins: logging + screenshots on one TestCase
+│   ├── 04_Hierarchial_Inheritance/
+│   │   └── 206_HI.js                       # Son1, Son2, Son3 all extend Father
+│   └── 05_Hybrid_Inheritance/
+│       └── 207_Hybird.js                   # A note, not runnable code
+├── 28_OOPs_Polymorphism/
+│   ├── Compile_Time/208.js                 # (empty)
+│   └── Run_Time/207_RTP.js                 # APIPage overrides BaseTest.setup()
+├── 29_IQ/
+│   ├── 209.js                              # class Bug: display()
+│   ├── 210.js                              # super.who() chain: C>B>A
+│   ├── 211.js                              # Method chaining with return this
+│   └── 212.js                              # (commented-out TypeScript)
+├── 30_Typescript/
+│   ├── 213.ts                              # A typed variable
+│   └── 213.js                              # What tsc compiled it to
+└── 31_Typescript/
+    ├── 214.ts                              # First TypeScript file
+    ├── 215_Basic.ts                        # Basic types, arrays, any, unknown
+    ├── 216_Fn.ts                           # Typed parameters and return types
+    ├── 217.ts                              # Arrow functions, object types, void
+    └── 218.ts                              # never: throws or loops forever
 ```
 
 ---
@@ -522,7 +570,7 @@ node --version                              # v18+ (tested on v22)
 node 01_chapter_JS_Basics/01_HelloWorld.js  # Hello World!
 ```
 
-Every `.js` lesson runs the same way: `node <chapter folder>/<file>.js`. The `.spec.ts` files in Chapter 21 run with Playwright instead (see lesson 164). Chapter 24 is its own Playwright project: `cd 24_Playwright && npm install && npx playwright install && npx playwright test`.
+Every `.js` lesson runs the same way: `node <chapter folder>/<file>.js`. The `.spec.ts` files in Chapter 21 run with Playwright instead (see lesson 164). Chapter 24 is its own Playwright project: `cd 24_Playwright && npm install && npx playwright install && npx playwright test`. The `.ts` lessons in Chapters 30 and 31 run directly on Node 22 (`node 31_Typescript/214.ts`), or compile them first with `tsc` (lesson 213).
 
 ---
 
@@ -5909,6 +5957,377 @@ tests.forEach(function (test) {
 });
 ```
 
+### 203: Multilevel Inheritance
+
+**Concept:** Inheritance can go more than one level deep: `AdminPage extends AuthPage`, and `AuthPage extends BasePage`. An `AdminPage` object gets the methods of all three classes. Each constructor passes data up with `super(...)`.
+
+**Why:** Real page-object suites grow in layers: every page can `open()`, pages behind a login can also `login()`, and the admin page adds `manageUsers()` on top.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When one group of classes needs everything a parent has plus a little more, and a smaller group needs even more on top of that.
+- **Q: What does it replace?** A: Repeating `login()` in every page that sits behind a login.
+- **Q: What's the gotcha?** A: Keep chains short (two or three levels). A method found deep in a long chain is hard to trace, and a change in `BasePage` ripples through every level below it.
+
+```mermaid
+flowchart TD
+    B["BasePage<br/>open()"] --> A["AuthPage extends BasePage<br/>login(user)"]
+    A --> AD["AdminPage extends AuthPage<br/>manageUsers()"]
+    AD --> O["admin.open(), admin.login(), admin.manageUsers()<br/>all work"]
+```
+
+```js
+// 27_OOPs_Inheritance/02_MultiLevel_Inheritance/203_MI.js
+class BasePage {
+    constructor(name) { this.name = name; }
+    open() { console.log("[OPEN] " + this.name); }
+}
+class AuthPage extends BasePage {
+    login(user) { console.log("[LOGIN] " + user); }
+}
+class AdminPage extends AuthPage {
+    constructor() { super("Admin Panel"); }
+    manageUsers() { console.log("[ADMIN] Managing users"); }
+}
+
+const admin = new AdminPage();
+admin.open();               // [OPEN] Admin Panel   (from BasePage)
+admin.login("superadmin");  // [LOGIN] superadmin   (from AuthPage)
+admin.manageUsers();        // [ADMIN] Managing users
+```
+
+### 204: Multiple Inheritance and Mixins
+
+**Concept:** A JavaScript class can extend only one parent: `class Son extends F1, F2` is a `SyntaxError` (`204_Multipe.js`). To borrow abilities from more than one place, use mixins (`205_Mixin_MI.js`): a mixin is a function that takes a class and returns a new class that extends it with extra methods.
+
+**Why:** A test class may need logging and screenshots on top of its base `TestCase`. Mixins let you stack those abilities without a second `extends`.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When a class needs small, unrelated extras (logging, screenshots, retries) that many classes share.
+- **Q: What does it replace?** A: Multiple inheritance, which Java and JavaScript both leave out. Java uses interfaces; JavaScript uses mixins.
+- **Q: What's the gotcha?** A: The wrapping order matters: in `ScreenshotMixin(LoggerMixin(TestCase))` the outer mixin wins if two of them define the same method name.
+
+![Types of inheritance in JavaScript: Single (Son extends Father), Multilevel (AdminPage extends AuthPage extends BasePage) and Hierarchical (Son1, Son2, Son3 extend Father) are allowed; Multiple (Son extends F1 and F2) is not allowed, use mixins instead; a class can extend only one parent](assets/images/ch27-inheritance-types.png)
+
+```mermaid
+flowchart LR
+    T["TestCase<br/>run()"] --> L["LoggerMixin(TestCase)<br/>+ log()"]
+    L --> S["ScreenshotMixin(...)<br/>+ takeScreenshot()"]
+    S --> ST["class SmartTest extends ...<br/>run(), log(), takeScreenshot()"]
+```
+
+```js
+// 27_OOPs_Inheritance/03_Multiple_Inheritance/205_Mixin_MI.js (shortened)
+// class Son extends F1, F2 {}   SyntaxError: Unexpected token ','
+const LoggerMixin = Base => class extends Base {
+    log(msg) { console.log("[Log] " + msg); }
+};
+const ScreenshotMixin = Base => class extends Base {
+    takeScreenshot() { console.log("[SCREENSHOT] captured"); }
+};
+
+class TestCase {
+    constructor(name) { this.name = name; }
+    run() { console.log("Running: " + this.name); }
+}
+class SmartTest extends ScreenshotMixin(LoggerMixin(TestCase)) {}
+
+const t = new SmartTest("Login Flow");
+t.run();              // Running: Login Flow
+t.log("Test started");// [Log] Test started
+t.takeScreenshot();   // [SCREENSHOT] captured
+```
+
+### 206: Hierarchical and Hybrid Inheritance
+
+**Concept:** Hierarchical inheritance is one parent with many children: `Son1`, `Son2` and `Son3` all extend `Father` and each gets `Father`'s methods (`206_HI.js`). Hybrid inheritance mixes two or more types, and because it usually needs multiple inheritance, plain JavaScript can't do it (`207_Hybird.js` is a note, not runnable code).
+
+**Why:** This is the normal shape of a page-object suite: one `BasePage`, many pages (`LoginPage`, `CartPage`, `DashboardPage`) extending it.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Whenever several sibling classes share the same base behaviour.
+- **Q: What does it replace?** A: A copy of the shared methods in every sibling class.
+- **Q: What's the gotcha?** A: Siblings don't share anything with each other, only with the parent. `node 207_Hybird.js` throws `SyntaxError: Unexpected token '>'`, because the file holds a note (`JS -> TS X + (PW)`), not code.
+
+| Type | Shape | In JavaScript? |
+|:-----|:------|:---------------|
+| Single | `Son extends Father` | ✅ Yes |
+| Multilevel | `C extends B`, `B extends A` | ✅ Yes |
+| Hierarchical | `Son1`, `Son2`, `Son3` extend `Father` | ✅ Yes |
+| Multiple | `Son extends F1, F2` | ❌ No, use mixins |
+| Hybrid | A mix of the above, usually with multiple | ❌ Not directly |
+
+```mermaid
+flowchart TD
+    F["Father<br/>eat()"] --> S1["Son1"]
+    F --> S2["Son2"]
+    F --> S3["Son3"]
+```
+
+```js
+// 27_OOPs_Inheritance/04_Hierarchial_Inheritance/206_HI.js (with a method added)
+class Father {
+    eat() { console.log("eating"); }
+}
+class Son1 extends Father {}
+class Son2 extends Father {}
+class Son3 extends Father {}
+
+new Son1().eat();   // eating
+new Son3().eat();   // eating
+```
+
+---
+
+## Chapter 28: Polymorphism
+
+### 207: Runtime vs Compile-Time Polymorphism
+
+**Concept:** Polymorphism means "one name, many forms". Runtime polymorphism is method overriding: `APIPage.setup()` replaces `BaseTest.setup()`, and JavaScript picks which one to run from the object at runtime (`Run_Time/207_RTP.js`). Compile-time polymorphism is method overloading (same name, different parameters). JavaScript doesn't have it, which is why `Compile_Time/208.js` is empty.
+
+**Why:** Overriding is how page objects and test types customise shared steps (Chapter 27, lesson 198). Knowing that JavaScript has no overloading saves you from a silent bug.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Override when a child must do a shared step its own way, such as `setup()` for an API test that opens no browser.
+- **Q: What does it replace?** A: For overloading, JavaScript uses one method that checks its arguments, or default parameters. TypeScript adds overload signatures on top.
+- **Q: What's the gotcha?** A: Write two methods with the same name in one JavaScript class and there's no error: the last one silently replaces the first.
+
+| | Runtime (overriding) | Compile-time (overloading) |
+|:--|:--|:--|
+| Where | Parent and child class | Same class |
+| Same name? | Yes, same parameters | Yes, different parameters |
+| In JavaScript? | ✅ Yes | ❌ No, the last method wins |
+| In Java | ✅ Yes | ✅ Yes |
+
+```mermaid
+flowchart LR
+    C["test.setup()"] --> Q{"which object?"}
+    Q -->|"new APIPage()"| A["APITest: open browser"]
+    Q -->|"new BaseTest()"| B["Base: open browser"]
+```
+
+```js
+// 28_OOPs_Polymorphism/Run_Time/207_RTP.js
+class BaseTest {
+    setup() { console.log("Base: open browser"); }
+}
+class APIPage extends BaseTest {
+    setup() { console.log("APITest: open browser"); }
+}
+new APIPage().setup();   // APITest: open browser
+new BaseTest().setup();  // Base: open browser
+
+// No overloading in JavaScript: the last add() wins
+class Calc {
+    add(a, b) { return a + b; }
+    add(a) { return "three"; }
+}
+console.log(new Calc().add(1, 2));   // three
+```
+
+---
+
+## Chapter 29: Interview Questions
+
+### 211: Method Chaining
+
+**Concept:** If a method ends with `return this`, its caller gets the same object back and can call the next method straight away: `new Counter().increment().increment().display()` (`211.js`). The other files in this chapter revisit earlier ideas: `209.js` is a plain class, and `210.js` chains `super.who()` through three levels to print `C>B>A`.
+
+**Why:** Fluent APIs read like a sentence. Playwright's locators chain the same way: `page.getByRole("list").getByText("Item")`.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: For builders and setup steps that configure one object in several small steps.
+- **Q: What does it replace?** A: Repeating the variable name on every line: `c.increment(); c.increment(); c.display();`.
+- **Q: What's the gotcha?** A: Every method in the chain must `return this`. Forget it once and the next call runs on `undefined`: `TypeError: Cannot read properties of undefined`.
+
+```mermaid
+flowchart LR
+    N["new Counter()<br/>count 0"] --> I1[".increment()<br/>count 1, returns this"]
+    I1 --> I2[".increment()<br/>count 2"]
+    I2 --> I3[".increment()<br/>count 3"]
+    I3 --> D[".display()<br/>Count: 3"]
+```
+
+```js
+// 29_IQ/211.js
+class Counter {
+    constructor() { this.count = 0; }
+    increment() {
+        this.count++;
+        return this;          // hand the same object back
+    }
+    display() {
+        console.log("Count:", this.count);
+        return this;
+    }
+}
+new Counter().increment().increment().increment().display();   // Count: 3
+```
+
+---
+
+## Chapter 30: TypeScript Setup
+
+### 213: Compiling TypeScript
+
+**Concept:** TypeScript is JavaScript plus type annotations (`let testName: string = "Pramod"`). The compiler `tsc` checks the types, then removes them and writes plain JavaScript: `tsc 213.ts` produces `213.js`, which `node` runs. The root `tsconfig.json` (made with `tsc --init`) holds the compiler settings, including `strict`.
+
+**Why:** Playwright tests are usually written in TypeScript, so type mistakes show up in the editor instead of halfway through a test run.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: For any project bigger than a script: test suites, page objects, shared helpers.
+- **Q: What does it replace?** A: Finding out at runtime that a value was the wrong type.
+- **Q: What's the gotcha?** A: Types are erased: nothing is checked while the code runs. Node 22 can run `.ts` files directly (`node 31_Typescript/214.ts`), but that only strips the types without checking them. And with the root `tsconfig.json`, `tsc --noEmit -p .` also checks the Chapter 21 and 24 Playwright files and reports `TS1295` errors for their `import` lines.
+
+![TypeScript: checked, then erased. 213.ts (let testName: string = "Pramod";) goes through tsc 213.ts, which type checks and removes the types, giving 213.js (let testName = "Pramod";), and node 213.js runs it as plain JavaScript; let x: number = "a" fails with TS2322; types exist only before the code runs](assets/images/ch30-ts-flow.png)
+
+```mermaid
+flowchart LR
+    TS["213.ts<br/>let testName: string"] --> TSC["tsc 213.ts<br/>check, then remove types"]
+    TSC -->|ok| JS["213.js<br/>let testName = ..."]
+    TSC -->|"wrong type"| E["error TS2322<br/>fix before running"]
+    JS --> N["node 213.js"]
+```
+
+| Command | What it does |
+|:--------|:-------------|
+| `npm install -g typescript` | Installs `tsc` |
+| `tsc --init` | Creates `tsconfig.json` |
+| `tsc 213.ts` | Checks `213.ts` and writes `213.js` |
+| `tsc --noEmit -p .` | Checks the whole project, writes nothing |
+| `node 31_Typescript/214.ts` | Runs a `.ts` file on Node 22 (types stripped, not checked) |
+
+```ts
+// 30_Typescript/213.ts
+let testName: string = "Pramod";
+
+// tsc 213.ts writes 30_Typescript/213.js:
+// "use strict";
+// let testName = "Pramod";
+```
+
+---
+
+## Chapter 31: TypeScript Basics
+
+### 214: Basic Types
+
+**Concept:** Add `: type` after a variable name to say what it may hold: `string`, `number` (whole and decimal numbers alike), `boolean`, `null`, `undefined`. Arrays are written `number[]` or `Array<string>`. `any` turns checking off; `unknown` accepts anything but makes you check it before use (`215_Basic.ts`).
+
+**Why:** With a type on each variable, assigning the wrong kind of value is caught before the test runs.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: On function parameters and data from outside; for simple `let x = 5` TypeScript infers `number` by itself.
+- **Q: What does it replace?** A: Comments like `// must be a number` that nothing enforces.
+- **Q: What's the gotcha?** A: There is no `float` or `int`, only `number` (`let pi: float` is an error). Prefer `unknown` over `any` ([any vs unknown](00_learning/any_vs_unknown_typescript.md)). A top-level `let name` compiled on its own clashes with the browser's global `name` (`TS2451`); the root `tsconfig.json` avoids that with `moduleDetection: force`.
+
+| Type | Example |
+|:-----|:--------|
+| `string` | `let name: string = "John";` |
+| `number` | `let pi: number = 3.14;` |
+| `boolean` | `let isActive: boolean = true;` |
+| `null`, `undefined` | `let nothing: null = null;` |
+| Array | `let numbers: number[] = [1, 2, 3];` or `Array<string>` |
+| `any` | Anything, no checks (avoid) |
+| `unknown` | Anything, check before use |
+
+```mermaid
+flowchart TD
+    V["let x: type = value"] --> P["primitives<br/>string, number, boolean, null, undefined"]
+    V --> A["arrays<br/>number[], Array&lt;string&gt;"]
+    V --> E["escape hatches<br/>any (no checks), unknown (check first)"]
+```
+
+```ts
+// 31_Typescript/215_Basic.ts (shortened)
+let name: string = "John";
+let age: number = 30;
+let pi: number = 3.14;            // no float type, just number
+let isActive: boolean = true;
+
+let numbers: number[] = [1, 2, 3];
+let names: Array<string> = ["John", "Jane"];
+
+let anything: any = "hello";      // avoid: no checks
+let data: unknown = "hello";      // safer: check before use
+
+// age = "thirty";   error TS2322: Type 'string' is not assignable to type 'number'
+```
+
+### 216: Typing Functions and Objects
+
+**Concept:** Parameters get types (`name: string`) and so does the return value, written after the brackets (`): string`). Arrow functions work the same way, and an object's shape is written as `{ name: string; age: number }` (`216_Fn.ts`, `217.ts`).
+
+**Why:** A typed function documents itself: the editor shows what it needs and what it returns, and stops a wrong call before it runs.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: On every function others will call, such as page-object methods and test helpers.
+- **Q: What does it replace?** A: Reading the function body to find out what to pass in.
+- **Q: What's the gotcha?** A: The return type is checked too: `function greet2(name: string): number` must return a number. A wrong argument such as `greet(42)` fails with `TS2345`.
+
+```mermaid
+flowchart LR
+    I["greet(name: string)"] --> F["function body"]
+    F --> R[": string<br/>return type"]
+    W["greet(42)"] -->|"TS2345"| X["blocked before it runs"]
+```
+
+```ts
+// 31_Typescript/216_Fn.ts and 217.ts (combined)
+function greet(name: string): string {
+    return `Hello, ${name}!`;
+}
+
+const multiply = (a: number, b: number): number => a * b;
+
+let user: { name: string; age: number } = { name: "Pramod", age: 30 };
+
+console.log(greet(user.name));   // Hello, Pramod!
+console.log(multiply(3, 4));     // 12
+// greet(42);   error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'
+```
+
+### 218: void and never
+
+**Concept:** `void` means a function returns nothing useful: it finishes, but you don't use its result (`sayHello(msg: string): void` in `217.ts`). `never` means the function never finishes at all: it always throws, or loops forever (`218.ts`).
+
+**Why:** `void` fits logging and click helpers. `never` fits a helper like `fail(message)` that always throws, so TypeScript knows the code after it can't run.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: `void` for functions that only do something (log, click, fill); `never` for functions that only throw.
+- **Q: What does it replace?** A: Guessing from the code whether a function returns at all.
+- **Q: What's the gotcha?** A: A `void` function still returns `undefined` when it ends. A `never` function must not end: `(): never => { return 1; }` is an error (`TS2322`).
+
+| | `void` | `never` |
+|:--|:--|:--|
+| Finishes? | ✅ Yes | ❌ No |
+| Returns | Nothing useful (`undefined`) | Nothing, ever |
+| Typical use | `console.log`, `click()` helpers | Always throws, or `while (true)` |
+
+```mermaid
+flowchart LR
+    V["sayHello(): void"] --> D["runs and finishes<br/>returns undefined"]
+    N["throwError(): never"] --> T["throws<br/>never finishes"]
+    L["infiniteLoop(): never"] --> W["while (true) forever"]
+```
+
+```ts
+// 31_Typescript/217.ts and 218.ts (combined)
+function sayHello(msg: string): void {
+    console.log(msg);
+}
+
+function throwError(message: string): never {
+    throw new Error(message);
+}
+
+function infiniteLoop(): never {
+    while (true) { }
+}
+
+sayHello("Hi");   // Hi
+try { throwError("Login failed"); } catch (e) { console.log((e as Error).message); }   // Login failed
+```
+
 ---
 
 ## Learning Notes
@@ -5920,6 +6339,7 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 | [default_vs_named_export_eli5.pdf](00_learning/default_vs_named_export_eli5.pdf) | Default vs named exports explained like you are 5, with pictures (2 pages). [Default vs Named Exports.pdf](00_learning/Default%20vs%20Named%20Exports.pdf) is the same explainer saved from the browser in landscape. |
 | [chatAt_vs_At_string.md](00_learning/chatAt_vs_At_string.md) | `charAt(i)` vs `at(i)` on strings: negative indexes, out-of-range results, with comparison tables |
 | [playwright_page_methods_await.md](00_learning/playwright_page_methods_await.md) | Every method and property on Playwright's `page` (118 members, v1.65.0): what it returns and whether it needs `await` |
+| [any_vs_unknown_typescript.md](00_learning/any_vs_unknown_typescript.md) | `any` vs `unknown` in TypeScript: what each allows, the real compiler errors, and which to use |
 | [rarely_needed_string_methods.md](00_learning/rarely_needed_string_methods.md) | `isWellFormed`, `toWellFormed`, `normalize`, `valueOf`, and the legacy HTML wrappers you should never use |
 | [object_reference_copy_eli5.html](00_learning/object_reference_copy_eli5.html) | Why `let b = a` changes `a`, explained like you are 5 with step-by-step diagrams. GitHub shows HTML as source, so download it or open it locally in a browser. |
 
@@ -5927,5 +6347,5 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 
 ## Coming Up
 
-- **Chapter 24: Playwright** and **Chapter 27: Inheritance** continue.
+- **Chapter 24: Playwright** and **Chapter 31: TypeScript Basics** continue.
 - Then TypeScript.
