@@ -177,6 +177,12 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [214: Basic Types](#214-basic-types)
   - [216: Typing Functions and Objects](#216-typing-functions-and-objects)
   - [218: void and never](#218-void-and-never)
+- [Chapter 32: Interfaces and Enums](#chapter-32-interfaces-and-enums)
+  - [219: Interfaces](#219-interfaces)
+  - [220: Optional and readonly Properties](#220-optional-and-readonly-properties)
+  - [224: Interfaces for Functions](#224-interfaces-for-functions)
+  - [227: Classes that implement an Interface](#227-classes-that-implement-an-interface)
+  - [228: Enums](#228-enums)
 - [Learning Notes](#learning-notes)
 - [Coming Up](#coming-up)
 
@@ -216,7 +222,8 @@ flowchart LR
     C27 --> C28["28 Polymorphism"]:::done
     C28 --> C29["29 Interview Questions"]:::done
     C29 --> C30["30 TypeScript Setup<br/>tsc, tsconfig"]:::done
-    C30 --> C31["31 TypeScript Basics<br/>types, functions, void, never"]:::progress
+    C30 --> C31["31 TypeScript Basics<br/>types, functions, void, never"]:::done
+    C31 --> C32["32 Interfaces and Enums<br/>interface, readonly, implements, enum"]:::progress
 
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
     classDef progress fill:#fef3c7,stroke:#d97706,color:#78350f
@@ -260,7 +267,8 @@ flowchart LR
 | 28 | Polymorphism | [28_OOPs_Polymorphism](28_OOPs_Polymorphism/) | ✅ Done | Runtime polymorphism (overriding); why JavaScript has no method overloading |
 | 29 | Interview Questions | [29_IQ](29_IQ/) | ✅ Done | `super` chains, method chaining with `return this` |
 | 30 | TypeScript Setup | [30_Typescript](30_Typescript/) | ✅ Done | Compiling `.ts` to `.js` with `tsc`, `tsconfig.json`, running `.ts` with Node |
-| 31 | TypeScript Basics | [31_Typescript](31_Typescript/) | 🟡 In progress | Type annotations, basic types, `any` vs `unknown`, typed functions and objects, `void`, `never` |
+| 31 | TypeScript Basics | [31_Typescript](31_Typescript/) | ✅ Done | Type annotations, basic types, `any` vs `unknown`, typed functions and objects, `void`, `never` |
+| 32 | Interfaces and Enums | [32_Abstraction_OOPs](32_Abstraction_OOPs/) | 🟡 In progress | `interface`, `extends`, optional `?` and `readonly` properties, function interfaces, `implements`, string `enum` |
 
 ---
 
@@ -548,12 +556,29 @@ LearnJSTSPlaywright4x/
 ├── 30_Typescript/
 │   ├── 213.ts                              # A typed variable
 │   └── 213.js                              # What tsc compiled it to
-└── 31_Typescript/
-    ├── 214.ts                              # First TypeScript file
-    ├── 215_Basic.ts                        # Basic types, arrays, any, unknown
-    ├── 216_Fn.ts                           # Typed parameters and return types
-    ├── 217.ts                              # Arrow functions, object types, void
-    └── 218.ts                              # never: throws or loops forever
+├── 31_Typescript/
+│   ├── 214.ts                              # First TypeScript file
+│   ├── 215_Basic.ts                        # Basic types, arrays, any, unknown
+│   ├── 216_Fn.ts                           # Typed parameters and return types
+│   ├── 217.ts                              # Arrow functions, object types, void
+│   └── 218.ts                              # never: throws or loops forever
+└── 32_Abstraction_OOPs/
+    ├── 00_Interface/
+    │   ├── 219.TS                          # interface User: three objects of one shape
+    │   ├── 220_Readonly.ts                 # Without readonly, point.x can change
+    │   ├── 221_Readonly_Applied.ts         # readonly x and y
+    │   ├── 222_Interaface_Ob.ts            # LoginPAGE extends BasePage
+    │   ├── 223_API_Response.ts             # Optional body and headers
+    │   ├── 224_Interface_Fn.ts             # An object of typed methods: Calculator
+    │   ├── 225_Interface_Hook.ts           # A function type: TestHook
+    │   ├── 226_REAL.ts                     # TestConfig for local and CI runs
+    │   └── 227_Class_VS_iNTERFACE.TS       # class TestCase implements Excetable
+    └── 01_ENUM/
+        ├── 228_ENUM.ts                     # enum TestStatus
+        ├── 229_ENUM.ts                     # enum SeverityLevels
+        ├── 230_ENUM.ts                     # enum Environment: base URLs
+        ├── 231.API.ts                      # enum HTTPMethod in sendRequest()
+        └── 231_PW_REAL.ts                  # enum Browser in a switch
 ```
 
 ---
@@ -570,7 +595,7 @@ node --version                              # v18+ (tested on v22)
 node 01_chapter_JS_Basics/01_HelloWorld.js  # Hello World!
 ```
 
-Every `.js` lesson runs the same way: `node <chapter folder>/<file>.js`. The `.spec.ts` files in Chapter 21 run with Playwright instead (see lesson 164). Chapter 24 is its own Playwright project: `cd 24_Playwright && npm install && npx playwright install && npx playwright test`. The `.ts` lessons in Chapters 30 and 31 run directly on Node 22 (`node 31_Typescript/214.ts`), or compile them first with `tsc` (lesson 213).
+Every `.js` lesson runs the same way: `node <chapter folder>/<file>.js`. The `.spec.ts` files in Chapter 21 run with Playwright instead (see lesson 164). Chapter 24 is its own Playwright project: `cd 24_Playwright && npm install && npx playwright install && npx playwright test`. The `.ts` lessons in Chapters 30 to 32 run directly on Node 22 (`node 31_Typescript/214.ts`), or compile them first with `tsc` (lesson 213). Files with an `enum` need `node --experimental-transform-types` (lesson 228).
 
 ---
 
@@ -6330,6 +6355,236 @@ try { throwError("Login failed"); } catch (e) { console.log((e as Error).message
 
 ---
 
+## Chapter 32: Interfaces and Enums
+
+### 219: Interfaces
+
+**Concept:** An `interface` names the shape of an object: which properties it must have and what type each one is (`interface User { name: string; age: number; email: string }`). Every object typed as `User` must match that shape exactly (`219.TS`). One interface can `extend` another and add more properties, just like classes (`222_Interaface_Ob.ts`).
+
+**Why:** Page objects, test data and API responses all have a fixed shape. An interface writes that shape down once, and TypeScript checks every object against it.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: Whenever many objects share the same fields: users, page locators, test configs, API responses.
+- **Q: What does it replace?** A: Writing `{ name: string; age: number; email: string }` again on every variable (Chapter 31, lesson 216).
+- **Q: What's the gotcha?** A: Interfaces exist only for the compiler: `tsc` writes no JavaScript for them, so you can't check `instanceof User` at runtime. A missing property (`TS2741`) or an extra one is an error.
+
+![Interface: a shape for objects. interface TestConfig lists browser: string, headless: boolean, timeout?: number and readonly baseURL: string; ciConfig: TestConfig matches the shape, while a missing browser is error TS2741; ? means optional, readonly means cannot reassign, implements means a class must follow it; interfaces vanish after compiling](assets/images/ch32-interface.png)
+
+```mermaid
+flowchart TD
+    B["interface BasePage<br/>url, title"] --> L["interface LoginPAGE extends BasePage<br/>+ usernameSelector, passwordSelector, loginButtonSelector"]
+    B --> F["interface FreeTrailPage extends BasePage<br/>+ usernameSelector, submitButtonSelector"]
+    L --> O["const loginPage: LoginPAGE = { ... }<br/>must have all 5 fields"]
+```
+
+```ts
+// 32_Abstraction_OOPs/00_Interface/222_Interaface_Ob.ts (shortened)
+interface BasePage {
+    url: string;
+    title: string;
+}
+interface LoginPAGE extends BasePage {
+    usernameSelector: string;
+    passwordSelector: string;
+    loginButtonSelector: string;
+}
+
+const loginPage: LoginPAGE = {
+    url: "/login",
+    title: "Login Page",
+    usernameSelector: "#username",
+    passwordSelector: "#password",
+    loginButtonSelector: "#login-btn",
+};
+
+console.log("URL:", loginPage.url);                       // URL: /login
+console.log("Username field:", loginPage.usernameSelector); // Username field: #username
+```
+
+### 220: Optional and readonly Properties
+
+**Concept:** A `?` after a property name makes it optional: `body?: string` may be left out (`223_API_Response.ts`, `226_REAL.ts`). `readonly` lets you set a property once, when the object is made, and never change it after (`221_Readonly_Applied.ts`).
+
+**Why:** A GET response often has no body, and a local test config may skip `timeout` and `retries`. Values like a base URL should never change halfway through a run.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: `?` for fields that are sometimes missing; `readonly` for settings and IDs that must stay fixed.
+- **Q: What does it replace?** A: Two near-identical interfaces (one with `body`, one without), or a comment saying "don't change this".
+- **Q: What's the gotcha?** A: `const` doesn't protect properties: in `220_Readonly.ts` the line `point.x = 15` works. Only `readonly` blocks it (`TS2540`), and only at compile time. A missing optional property reads as `undefined` (`Local: Chrome | timeout: undefined`).
+
+| Marker | Example | Meaning |
+|:-------|:--------|:--------|
+| (none) | `statusCode: number` | Required |
+| `?` | `body?: string` | May be left out, reads as `undefined` |
+| `readonly` | `readonly x: number` | Set once, then `TS2540` on any change |
+
+```mermaid
+flowchart LR
+    I["interface TestConfig<br/>timeout?: number"] --> C["ciConfig<br/>timeout: 10000"]
+    I --> L["localConfig<br/>no timeout"]
+    L --> U["localConfig.timeout<br/>undefined"]
+```
+
+```ts
+// 32_Abstraction_OOPs/00_Interface/221_Readonly_Applied.ts and 226_REAL.ts (combined)
+interface Point {
+    readonly x: number;
+    readonly y: number;
+}
+const point: Point = { x: 10, y: 10 };
+// point.x = 15;   error TS2540: Cannot assign to 'x' because it is a read-only property
+
+interface TestConfig {
+    browser: string;
+    headless: boolean;
+    baseURL: string;
+    timeout?: number;
+}
+const localConfig: TestConfig = { browser: "Chrome", headless: true, baseURL: "http://localhost:3000" };
+const ciConfig: TestConfig = { browser: "Firefox", headless: false, baseURL: "https://staging.app.com", timeout: 10000 };
+
+console.log("CI:", ciConfig.browser, "| timeout:", ciConfig.timeout);         // CI: Firefox | timeout: 10000
+console.log("Local:", localConfig.browser, "| timeout:", localConfig.timeout); // Local: Chrome | timeout: undefined
+```
+
+### 224: Interfaces for Functions
+
+**Concept:** An interface can describe methods (`add(a: number, b: number): number` in `224_Interface_Fn.ts`) or a function itself (`(testName: string): void` in `225_Interface_Hook.ts`). Functions assigned to it must take and return those types.
+
+**Why:** Test hooks such as `beforeEach` and `afterEach` all take a test name and return nothing. One `TestHook` type keeps every hook consistent.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: For callbacks and hooks that many functions must follow, and for objects of related helper methods.
+- **Q: What does it replace?** A: Repeating the full parameter list and return type on every hook.
+- **Q: What's the gotcha?** A: With the interface in place you can drop the types on the parameters: in `add: (a, b) => a + b`, TypeScript already knows `a` and `b` are numbers.
+
+```mermaid
+flowchart LR
+    T["interface TestHook<br/>(testName: string): void"] --> B["beforeEachHook"]
+    T --> A["afterEachHook"]
+    B --> O["[BEFORE] Setting up: Login Test"]
+```
+
+```ts
+// 32_Abstraction_OOPs/00_Interface/224_Interface_Fn.ts and 225_Interface_Hook.ts (combined)
+interface Calculator {
+    add(a: number, b: number): number;
+    subtract(a: number, b: number): number;
+}
+const calc: Calculator = {
+    add: (a, b) => a + b,          // a and b are numbers, from the interface
+    subtract: (a, b) => a - b,
+};
+console.log(calc.add(3, 4));       // 7
+
+interface TestHook {
+    (testName: string): void;
+}
+const beforeEachHook: TestHook = function (testName) {
+    console.log("[BEFORE] Setting up: " + testName);
+};
+beforeEachHook("Login Test");      // [BEFORE] Setting up: Login Test
+```
+
+### 227: Classes that implement an Interface
+
+**Concept:** `class TestCase implements Excetable` promises that the class has every property and method the interface lists (`227_Class_VS_iNTERFACE.TS`). The interface is the contract; the class is the code that fulfils it.
+
+**Why:** A test runner can accept anything `Excetable` (spelled that way in the lesson file) and call `run()` and `getStatus()` on it, whichever class it is. That is abstraction: callers depend on what an object can do, not how it does it.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When different classes (UI test, API test) must offer the same methods to the code that uses them.
+- **Q: What does it replace?** A: A base class whose only job is to list methods. Java uses `implements` in exactly the same way.
+- **Q: What's the gotcha?** A: `implements` copies nothing into the class: you still write every method yourself. Leave one out and you get `TS2420: Class 'TestCase' incorrectly implements interface`.
+
+| | `interface` | `class` |
+|:--|:--|:--|
+| Holds code? | ❌ No, only names and types | ✅ Yes |
+| Exists at runtime? | ❌ No | ✅ Yes |
+| `new` it? | ❌ No | ✅ Yes |
+| A class can have | Many: `implements A, B` | One: `extends A` |
+
+```mermaid
+flowchart LR
+    I["interface Excetable<br/>name, run(), getStatus()"] -.->|implements| C["class TestCase<br/>writes all three"]
+    C --> R["runner calls t.run()<br/>and t.getStatus()"]
+```
+
+```ts
+// 32_Abstraction_OOPs/00_Interface/227_Class_VS_iNTERFACE.TS
+interface Excetable {
+    name: string;
+    run(): void;
+    getStatus(): string;
+}
+
+class TestCase implements Excetable {
+    name: string;
+    constructor(name: string) {
+        this.name = name;
+    }
+    run(): void {
+        console.log("[RUN] " + this.name);
+    }
+    getStatus(): string {
+        return "PASS";
+    }
+}
+
+const t = new TestCase("Login Test");
+t.run();                      // [RUN] Login Test
+console.log(t.getStatus());   // PASS
+```
+
+### 228: Enums
+
+**Concept:** An `enum` is a fixed list of named values: `TestStatus.Pass` is `"PASS"`, `Environment.QA` is `"https://qa.api.com"` (`228_ENUM.ts` to `230_ENUM.ts`). A parameter typed with an enum accepts only its members (`231.API.ts`, `231_PW_REAL.ts`).
+
+**Why:** Statuses, browsers, HTTP methods and environments each have a short, known list of values. An enum turns a typo like `"chorme"` into a compile error instead of a failed run.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: For any set of options known ahead of time: test status, severity, browser, environment URL, HTTP method.
+- **Q: What does it replace?** A: Loose strings scattered through the code (`"GET"`, `"chrome"`), where a typo goes unnoticed.
+- **Q: What's the gotcha?** A: Unlike an interface, an enum becomes a real JavaScript object. That's why `node 228_ENUM.ts` on Node 22 fails with `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`: run it with `node --experimental-transform-types`, or compile with `tsc` first. A string enum also rejects a plain string: `launchBrowser("chrome")` is `TS2345`, so always write `Browser.Chrome`.
+
+![enum: named constants. enum Browser has Chrome = "chrome", Firefox = "firefox", Safari = "safari"; launchBrowser(Browser.Chrome) prints Launching Chromium, while launchBrowser("chorme") is blocked with TS2345; one fixed list, no typos; an enum becomes a real JavaScript object after tsc](assets/images/ch32-enum.png)
+
+```mermaid
+flowchart LR
+    E["enum HTTPMethod<br/>Get, Post, Delete"] --> F["sendRequest(method: HTTPMethod, endpoint)"]
+    F -->|"HTTPMethod.Get"| OK["GET /api/users → 200 OK"]
+    F -->|"&quot;GETT&quot;"| X["TS2345<br/>blocked before it runs"]
+```
+
+```ts
+// 32_Abstraction_OOPs/01_ENUM/231.API.ts (members renamed) and 231_PW_REAL.ts
+enum HTTPMethod {
+    Get = "GET",
+    Post = "POST",
+    Delete = "DELETE",
+}
+function sendRequest(method: HTTPMethod, endpoint: string): void {
+    console.log(method + " " + endpoint + " → 200 OK");
+}
+sendRequest(HTTPMethod.Get, "/api/users");      // GET /api/users → 200 OK
+sendRequest(HTTPMethod.Delete, "/api/users/1"); // DELETE /api/users/1 → 200 OK
+// sendRequest("GETT", "/api/users");   error TS2345
+
+enum Browser {
+    Chrome = "chrome",
+    Firefox = "firefox",
+}
+function launchBrowser(browser: Browser): void {
+    switch (browser) {
+        case Browser.Chrome:  console.log("Launching Chromium (Chrome v120)"); break;
+        case Browser.Firefox: console.log("Launching Gecko (Firefox v115)"); break;
+    }
+}
+launchBrowser(Browser.Chrome);   // Launching Chromium (Chrome v120)
+```
+
+---
+
 ## Learning Notes
 
 Short explainers kept in [00_learning/](00_learning/), written while working through the lessons.
@@ -6347,5 +6602,5 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 
 ## Coming Up
 
-- **Chapter 24: Playwright** and **Chapter 31: TypeScript Basics** continue.
-- Then TypeScript.
+- **Chapter 24: Playwright** and **Chapter 32: Interfaces and Enums** continue.
+- Then more TypeScript: abstract classes, generics and type aliases.
