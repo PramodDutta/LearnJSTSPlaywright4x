@@ -183,6 +183,14 @@ A chapter-by-chapter learning repo for testers moving into JavaScript, TypeScrip
   - [224: Interfaces for Functions](#224-interfaces-for-functions)
   - [227: Classes that implement an Interface](#227-classes-that-implement-an-interface)
   - [228: Enums](#228-enums)
+- [Chapter 33: Generics](#chapter-33-generics)
+  - [233: Generic Functions](#233-generic-functions)
+  - [234: Generic Classes](#234-generic-classes)
+- [Chapter 34: Access Modifiers](#chapter-34-access-modifiers)
+  - [236: public, private and protected](#236-public-private-and-protected)
+  - [238: private readonly Fields](#238-private-readonly-fields)
+- [Chapter 35: Abstract Classes](#chapter-35-abstract-classes)
+  - [239: Abstract Classes](#239-abstract-classes)
 - [Learning Notes](#learning-notes)
 - [Coming Up](#coming-up)
 
@@ -223,7 +231,10 @@ flowchart LR
     C28 --> C29["29 Interview Questions"]:::done
     C29 --> C30["30 TypeScript Setup<br/>tsc, tsconfig"]:::done
     C30 --> C31["31 TypeScript Basics<br/>types, functions, void, never"]:::done
-    C31 --> C32["32 Interfaces and Enums<br/>interface, readonly, implements, enum"]:::progress
+    C31 --> C32["32 Interfaces and Enums<br/>interface, readonly, implements, enum"]:::done
+    C32 --> C33["33 Generics<br/>functions, classes"]:::done
+    C33 --> C34["34 Access Modifiers<br/>public, private, protected"]:::done
+    C34 --> C35["35 Abstract Classes"]:::progress
 
     classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
     classDef progress fill:#fef3c7,stroke:#d97706,color:#78350f
@@ -268,7 +279,10 @@ flowchart LR
 | 29 | Interview Questions | [29_IQ](29_IQ/) | ✅ Done | `super` chains, method chaining with `return this` |
 | 30 | TypeScript Setup | [30_Typescript](30_Typescript/) | ✅ Done | Compiling `.ts` to `.js` with `tsc`, `tsconfig.json`, running `.ts` with Node |
 | 31 | TypeScript Basics | [31_Typescript](31_Typescript/) | ✅ Done | Type annotations, basic types, `any` vs `unknown`, typed functions and objects, `void`, `never` |
-| 32 | Interfaces and Enums | [32_Abstraction_OOPs](32_Abstraction_OOPs/) | 🟡 In progress | `interface`, `extends`, optional `?` and `readonly` properties, function interfaces, `implements`, string `enum` |
+| 32 | Interfaces and Enums | [32_Abstraction_OOPs](32_Abstraction_OOPs/) | ✅ Done | `interface`, `extends`, optional `?` and `readonly` properties, function interfaces, `implements`, string `enum` |
+| 33 | Generics | [33_OOPs_Generic](33_OOPs_Generic/) | ✅ Done | Generic functions `<T>`, generic classes, typed API response wrapper, `!` non-null assertion |
+| 34 | Access Modifiers | [34_private_public_protected](34_private_public_protected/) | ✅ Done | `public`, `private`, `protected`, a protected `BasePage`, `private readonly` config |
+| 35 | Abstract Classes | [35_TS_Abstract_Class](35_TS_Abstract_Class/) | 🟡 In progress | `abstract` classes and methods, ready-made methods in the same parent |
 
 ---
 
@@ -562,23 +576,33 @@ LearnJSTSPlaywright4x/
 │   ├── 216_Fn.ts                           # Typed parameters and return types
 │   ├── 217.ts                              # Arrow functions, object types, void
 │   └── 218.ts                              # never: throws or loops forever
-└── 32_Abstraction_OOPs/
-    ├── 00_Interface/
-    │   ├── 219.TS                          # interface User: three objects of one shape
-    │   ├── 220_Readonly.ts                 # Without readonly, point.x can change
-    │   ├── 221_Readonly_Applied.ts         # readonly x and y
-    │   ├── 222_Interaface_Ob.ts            # LoginPAGE extends BasePage
-    │   ├── 223_API_Response.ts             # Optional body and headers
-    │   ├── 224_Interface_Fn.ts             # An object of typed methods: Calculator
-    │   ├── 225_Interface_Hook.ts           # A function type: TestHook
-    │   ├── 226_REAL.ts                     # TestConfig for local and CI runs
-    │   └── 227_Class_VS_iNTERFACE.TS       # class TestCase implements Excetable
-    └── 01_ENUM/
-        ├── 228_ENUM.ts                     # enum TestStatus
-        ├── 229_ENUM.ts                     # enum SeverityLevels
-        ├── 230_ENUM.ts                     # enum Environment: base URLs
-        ├── 231.API.ts                      # enum HTTPMethod in sendRequest()
-        └── 231_PW_REAL.ts                  # enum Browser in a switch
+├── 32_Abstraction_OOPs/
+│   ├── 00_Interface/
+│   │   ├── 219.TS                          # interface User: three objects of one shape
+│   │   ├── 220_Readonly.ts                 # Without readonly, point.x can change
+│   │   ├── 221_Readonly_Applied.ts         # readonly x and y
+│   │   ├── 222_Interaface_Ob.ts            # LoginPAGE extends BasePage
+│   │   ├── 223_API_Response.ts             # Optional body and headers
+│   │   ├── 224_Interface_Fn.ts             # An object of typed methods: Calculator
+│   │   ├── 225_Interface_Hook.ts           # A function type: TestHook
+│   │   ├── 226_REAL.ts                     # TestConfig for local and CI runs
+│   │   └── 227_Class_VS_iNTERFACE.TS       # class TestCase implements Excetable
+│   └── 01_ENUM/
+│       ├── 228_ENUM.ts                     # enum TestStatus
+│       ├── 229_ENUM.ts                     # enum SeverityLevels
+│       ├── 230_ENUM.ts                     # enum Environment: base URLs
+│       ├── 231_PW_REAL.ts                  # enum Browser in a switch
+│       └── 232.API.ts                      # enum HTTPMethod in sendRequest()
+├── 33_OOPs_Generic/
+│   ├── 233_Generic_Method.ts               # getFirstResult<T>()
+│   ├── 234_Generic_Class.ts                # TestDataStorage<T>
+│   └── 235_REAL_Generic_API.ts             # wrapResponse<T>() for API data
+├── 34_private_public_protected/
+│   ├── 236_PPP.ts                          # All three modifiers in an APIClient
+│   ├── 237_PageObejctMode.ts               # BasePage with protected navigate()
+│   └── 238_Readonly.ts                     # private readonly config fields
+└── 35_TS_Abstract_Class/
+    └── 239_AC.ts                           # abstract BaseTest, concrete UITest
 ```
 
 ---
@@ -595,7 +619,7 @@ node --version                              # v18+ (tested on v22)
 node 01_chapter_JS_Basics/01_HelloWorld.js  # Hello World!
 ```
 
-Every `.js` lesson runs the same way: `node <chapter folder>/<file>.js`. The `.spec.ts` files in Chapter 21 run with Playwright instead (see lesson 164). Chapter 24 is its own Playwright project: `cd 24_Playwright && npm install && npx playwright install && npx playwright test`. The `.ts` lessons in Chapters 30 to 32 run directly on Node 22 (`node 31_Typescript/214.ts`), or compile them first with `tsc` (lesson 213). Files with an `enum` need `node --experimental-transform-types` (lesson 228).
+Every `.js` lesson runs the same way: `node <chapter folder>/<file>.js`. The `.spec.ts` files in Chapter 21 run with Playwright instead (see lesson 164). Chapter 24 is its own Playwright project: `cd 24_Playwright && npm install && npx playwright install && npx playwright test`. The `.ts` lessons in Chapters 30 to 35 run directly on Node 22 (`node 31_Typescript/214.ts`), or compile them first with `tsc` (lesson 213). Files with an `enum` need `node --experimental-transform-types` (lesson 228).
 
 ---
 
@@ -6538,7 +6562,7 @@ console.log(t.getStatus());   // PASS
 
 ### 228: Enums
 
-**Concept:** An `enum` is a fixed list of named values: `TestStatus.Pass` is `"PASS"`, `Environment.QA` is `"https://qa.api.com"` (`228_ENUM.ts` to `230_ENUM.ts`). A parameter typed with an enum accepts only its members (`231.API.ts`, `231_PW_REAL.ts`).
+**Concept:** An `enum` is a fixed list of named values: `TestStatus.Pass` is `"PASS"`, `Environment.QA` is `"https://qa.api.com"` (`228_ENUM.ts` to `230_ENUM.ts`). A parameter typed with an enum accepts only its members (`231_PW_REAL.ts`, `232.API.ts`).
 
 **Why:** Statuses, browsers, HTTP methods and environments each have a short, known list of values. An enum turns a typo like `"chorme"` into a compile error instead of a failed run.
 
@@ -6557,7 +6581,7 @@ flowchart LR
 ```
 
 ```ts
-// 32_Abstraction_OOPs/01_ENUM/231.API.ts (members renamed) and 231_PW_REAL.ts
+// 32_Abstraction_OOPs/01_ENUM/232.API.ts (members renamed) and 231_PW_REAL.ts
 enum HTTPMethod {
     Get = "GET",
     Post = "POST",
@@ -6585,6 +6609,256 @@ launchBrowser(Browser.Chrome);   // Launching Chromium (Chrome v120)
 
 ---
 
+## Chapter 33: Generics
+
+### 233: Generic Functions
+
+**Concept:** A generic function has a type placeholder, usually called `T`, that is filled in at the call: `getFirstResult<number>([200, 400, 500])` takes numbers and returns a number (`233_Generic_Method.ts`). `wrapResponse<T>` in `235_REAL_Generic_API.ts` does the same for API data.
+
+**Why:** One helper works for status codes, test names and flags, and TypeScript still knows the exact type that comes back.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When the same logic applies to many types: first item of a list, an API response wrapper, a test data store.
+- **Q: What does it replace?** A: One copy per type (`getFirstNumber`, `getFirstString`), or `any`, which loses the type.
+- **Q: What's the gotcha?** A: The `!` in `result[0]!` promises TypeScript that the value is there. It's needed because `tsconfig.json` sets `noUncheckedIndexedAccess`, but it checks nothing at runtime: an empty array still gives `undefined`.
+
+![Generics: one function, any type. getFirstResult<T>(result: T[]): T is called with number, string and boolean and returns 200, "Login" and true; getFirstResult<number>([1, "a"]) is error TS2322; T is a placeholder, filled in when you call it](assets/images/ch33-generics.png)
+
+```mermaid
+flowchart LR
+    F["getFirstResult&lt;T&gt;(result: T[]): T"] -->|"T = number"| N["200"]
+    F -->|"T = string"| S["Login"]
+    F -->|"T = boolean"| B["true"]
+```
+
+```ts
+// 33_OOPs_Generic/233_Generic_Method.ts and 235_REAL_Generic_API.ts (shortened)
+function getFirstResult<T>(result: T[]): T {
+    return result[0]!;      // ! = non-null assertion
+}
+
+console.log(getFirstResult<number>([200, 400, 500]));            // 200
+console.log(getFirstResult<string>(["Login", "Signup", "Cart"])); // Login
+console.log(getFirstResult<boolean>([true, false, true]));       // true
+// getFirstResult<number>([1, "a"]);   error TS2322
+
+function wrapResponse<T>(statusCode: number, data: T): { statusCode: number; data: T } {
+    return { statusCode: statusCode, data: data };
+}
+console.log(wrapResponse<string>(200, "admin"));   // { statusCode: 200, data: 'admin' }
+console.log(wrapResponse<boolean>(200, true));     // { statusCode: 200, data: true }
+```
+
+### 234: Generic Classes
+
+**Concept:** A class can take a type placeholder too: `TestDataStorage<T>` keeps a list of `T`, and you choose `T` when you create the object, as in `new TestDataStorage<number>()` (`234_Generic_Class.ts`).
+
+**Why:** One storage class can hold status codes in one object and test names in another, without ever mixing them up.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: For containers: test data stores, queues, caches, typed API clients.
+- **Q: What does it replace?** A: A separate `NumberStorage` and `StringStorage`, or an `any[]` that accepts anything.
+- **Q: What's the gotcha?** A: `T` is fixed for that object: adding a string to a `TestDataStorage<number>` is `TS2345`. And `getFirst()` on an empty store returns `undefined`, although its type says `T`.
+
+```mermaid
+flowchart TD
+    C["class TestDataStorage&lt;T&gt;<br/>add, getFirst, getAll, count"] --> N["new TestDataStorage&lt;number&gt;()<br/>200, 404, 500"]
+    C --> S["new TestDataStorage&lt;string&gt;()<br/>Login Test, Checkout Test"]
+```
+
+```ts
+// 33_OOPs_Generic/234_Generic_Class.ts (shortened)
+class TestDataStorage<T> {
+    private items: T[] = [];
+    add(item: T): void {
+        this.items.push(item);
+    }
+    getFirst(): T {
+        return this.items[0]!;
+    }
+    count(): number {
+        return this.items.length;
+    }
+}
+
+const codes = new TestDataStorage<number>();
+codes.add(200);
+codes.add(404);
+// codes.add("500");   error TS2345
+console.log("First code:", codes.getFirst());   // First code: 200
+
+const names = new TestDataStorage<string>();
+names.add("Login Test");
+console.log("Test count:", names.count());      // Test count: 1
+```
+
+---
+
+## Chapter 34: Access Modifiers
+
+### 236: public, private and protected
+
+**Concept:** Access modifiers say who may use a class member. `public` (the default) is open to everyone, `protected` is for the class and its children, and `private` is for that class only (`236_PPP.ts`).
+
+**Why:** An API key should stay inside `APIClient`, and `navigate()` in `BasePage` is for page objects, not for tests (`237_PageObejctMode.ts`).
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: `private` for secrets and helpers, `protected` for what child page objects need, `public` for the methods a test calls.
+- **Q: What does it replace?** A: The `_name` naming habit, which nothing enforces.
+- **Q: What's the gotcha?** A: TypeScript's `private` is checked only at compile time, so `apiKey` is still readable in the running JavaScript. A `#apiKey` field (Chapter 26) stays private at runtime as well.
+
+| Modifier | Same class | Child class | Outside | Error if broken |
+|:---------|:----------:|:-----------:|:-------:|:----------------|
+| `public` | ✅ | ✅ | ✅ | |
+| `protected` | ✅ | ✅ | ❌ | `TS2445` |
+| `private` | ✅ | ❌ | ❌ | `TS2341` |
+
+![public, private, protected: public works in the same class, child class and outside; protected works in the same class and child class; private works only in the same class; client.apiKey is error TS2341 and client.timeout is error TS2445; checked by TypeScript, not at runtime](assets/images/ch34-access-modifiers.png)
+
+```mermaid
+flowchart TD
+    B["BasePage<br/>protected baseURL, navigate()"] -->|"child may use them"| L["LoginPage<br/>public login(user)"]
+    T["the test"] -->|"page.login('admin')"| L
+    T -.->|"page.navigate() is TS2445"| B
+```
+
+```ts
+// 34_private_public_protected/237_PageObejctMode.ts
+class BasePage {
+    protected baseURL: string;
+
+    constructor(url: string) {
+        this.baseURL = url;
+    }
+    protected navigate(path: string): void {
+        console.log("Navigating to: " + this.baseURL + path);
+    }
+}
+
+class LoginPage extends BasePage {
+    constructor() {
+        super("https://app.staging.com");
+    }
+    login(user: string): void {
+        this.navigate("/login");      // allowed: LoginPage is a child
+        console.log("Typing " + user + " into #username");
+    }
+}
+
+const page = new LoginPage();
+page.login("admin");
+// Navigating to: https://app.staging.com/login
+// Typing admin into #username
+// page.navigate("/login");   error TS2445: protected
+```
+
+### 238: private readonly Fields
+
+**Concept:** `private readonly` combines two rules: only the class can see the field, and even the class can't change it after the constructor (`238_Readonly.ts`).
+
+**Why:** A test configuration (URL, timeout, retries) is set once at the start, and nothing should change it halfway through a run.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: For settings passed in through the constructor that must stay fixed: base URL, timeout, retries.
+- **Q: What does it replace?** A: A private field plus a promise not to write a setter for it.
+- **Q: What's the gotcha?** A: Like `private`, it's a compile-time rule. From outside, `config.baseURL = "..."` fails because the field is private (`TS2341`); inside the class, changing it fails because it's readonly (`TS2540`).
+
+```mermaid
+flowchart LR
+    C["constructor<br/>sets it once"] --> F["private readonly baseURL"]
+    F --> R["showConfig()<br/>can read it"]
+    F -.-> X["any later change<br/>TS2540"]
+```
+
+```ts
+// 34_private_public_protected/238_Readonly.ts (shortened)
+class PlaywrightConfig {
+    private readonly baseURL: string;
+    private readonly timeout: number;
+
+    constructor(url: string, timeout: number) {
+        this.baseURL = url;         // allowed: in the constructor
+        this.timeout = timeout;
+    }
+    showConfig(): void {
+        console.log("URL: " + this.baseURL);
+        console.log("Timeout: " + this.timeout + "ms");
+        // this.timeout = 5000;     error TS2540: read-only
+    }
+}
+
+const config = new PlaywrightConfig("https://staging.app.com", 30000);
+config.showConfig();
+// URL: https://staging.app.com
+// Timeout: 30000ms
+// config.baseURL = "https://other.com";   error TS2341: private
+```
+
+---
+
+## Chapter 35: Abstract Classes
+
+### 239: Abstract Classes
+
+**Concept:** An `abstract class` is a parent you can't create objects from. Its `abstract` methods have no body, so every concrete child must write them, while its normal methods (`loan1()`) are inherited ready to use (`239_AC.ts`).
+
+**Why:** `BaseTest` can insist that every test type has `setup()`, `execute()` and `teardown()`, and still share code that is the same for all of them.
+
+**Q&A: why use this?**
+- **Q: When do I reach for it?** A: When children must follow the same steps and also share some real code or fields.
+- **Q: What does it replace?** A: A parent method that only throws "override me", a mistake you'd find only at runtime.
+- **Q: What's the gotcha?** A: `new BaseTest()` is `TS2511`, and a child that skips an abstract method is `TS2515`. `239_AC.ts` only defines the classes, so running it prints nothing; the sample below adds the object and the calls.
+
+| | `interface` | `abstract class` | `class` |
+|:--|:--|:--|:--|
+| Method bodies | ❌ No | ✅ Some | ✅ All |
+| Fields and constructor | Field types only | ✅ Yes | ✅ Yes |
+| `new` it? | ❌ No | ❌ No | ✅ Yes |
+| Exists at runtime? | ❌ No | ✅ Yes | ✅ Yes |
+| A class can use | Many (`implements`) | One (`extends`) | One (`extends`) |
+
+![Abstract class: a half-built parent. abstract class BaseTest has abstract setup, execute and teardown that the child must write, and loan1 ready to use; class UITest extends BaseTest can be created with new UITest("Login"), but new BaseTest("Login") is error TS2511; miss one abstract method and you get TS2515](assets/images/ch35-abstract-class.png)
+
+```mermaid
+flowchart TD
+    B["abstract class BaseTest<br/>abstract setup(), execute(), teardown()<br/>ready: loan1()"] --> U["class UITest extends BaseTest<br/>writes every abstract method"]
+    U --> O["new UITest('Login') works"]
+    B -.-> X["new BaseTest('Login')<br/>TS2511"]
+```
+
+```ts
+// 35_TS_Abstract_Class/239_AC.ts (shortened, with calls added)
+abstract class BaseTest {
+    protected testName: string;
+    constructor(testName: string) {
+        this.testName = testName;
+    }
+    abstract setup(): void;         // no body: the child must write it
+    abstract execute(): void;
+
+    loan1(): void {                 // ready to use
+        console.log("Loan Given already!");
+    }
+}
+
+class UITest extends BaseTest {
+    setup(): void {
+        console.log("  Setup: launch browser");
+    }
+    execute(): void {
+        console.log("  Execute: click buttons, fill forms");
+    }
+}
+
+const test = new UITest("Login");
+test.setup();      //   Setup: launch browser
+test.execute();    //   Execute: click buttons, fill forms
+test.loan1();      // Loan Given already!
+// new BaseTest("Login");   error TS2511
+```
+
+---
+
 ## Learning Notes
 
 Short explainers kept in [00_learning/](00_learning/), written while working through the lessons.
@@ -6602,5 +6876,4 @@ Short explainers kept in [00_learning/](00_learning/), written while working thr
 
 ## Coming Up
 
-- **Chapter 24: Playwright** and **Chapter 32: Interfaces and Enums** continue.
-- Then more TypeScript: abstract classes, generics and type aliases.
+- **Chapter 24: Playwright** and **Chapter 35: Abstract Classes** continue.
