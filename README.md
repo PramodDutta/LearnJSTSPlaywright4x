@@ -6147,6 +6147,8 @@ new Son3().eat();   // eating
 | In JavaScript? | ✅ Yes | ❌ No, the last method wins |
 | In Java | ✅ Yes | ✅ Yes |
 
+![Polymorphism: one name, many forms. Runtime overriding works in JavaScript: new APIPage().setup() prints APITest: open browser and new BaseTest().setup() prints Base: open browser; compile-time overloading does not: with two add methods the last one wins, so add(1, 2) returns "three"; the object decides which method runs](assets/images/ch28-polymorphism.png)
+
 ```mermaid
 flowchart LR
     C["test.setup()"] --> Q{"which object?"}
@@ -6187,6 +6189,8 @@ console.log(new Calc().add(1, 2));   // three
 - **Q: When do I reach for it?** A: For builders and setup steps that configure one object in several small steps.
 - **Q: What does it replace?** A: Repeating the variable name on every line: `c.increment(); c.increment(); c.display();`.
 - **Q: What's the gotcha?** A: Every method in the chain must `return this`. Forget it once and the next call runs on `undefined`: `TypeError: Cannot read properties of undefined`.
+
+![Method chaining with return this: new Counter().increment().increment().increment().display() goes from count 0 to 3 and shows Count: 3; return this hands the next call the same object, while a method with no return makes the next call run on undefined; every method in the chain must return this](assets/images/ch29-method-chaining.png)
 
 ```mermaid
 flowchart LR
@@ -6278,6 +6282,8 @@ let testName: string = "Pramod";
 | Array | `let numbers: number[] = [1, 2, 3];` or `Array<string>` |
 | `any` | Anything, no checks (avoid) |
 | `unknown` | Anything, check before use |
+
+![TypeScript basic types: primitives string, number and boolean; arrays number[] and Array<string>; functions with a return type, void and never; any has no checks, avoid it; unknown must be checked before you use it; void finishes, never does not](assets/images/ch31-ts-types.png)
 
 ```mermaid
 flowchart TD
